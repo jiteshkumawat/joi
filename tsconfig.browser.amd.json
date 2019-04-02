@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "module": "AMD",
+    "moduleResolution": "Classic",
+    "noImplicitAny": true,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "outFile": "dist/joi.browser.amd.js",
+    "sourceMap": false,
+    "target": "es3"
+  },
+  "include": ["xmlElements/**/*", "utility/**/*"],
+  "exclude": ["**/*.spec.ts", "./utility/joi.ts"]
+}

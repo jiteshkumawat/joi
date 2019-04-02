@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "Node",
+    "noImplicitAny": true,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "outDir": "dist",
+    "sourceMap": true,
+    "types": ["node", "mocha", "chai"]
+  },
+  "include": ["xmlElements/**/*", "utility/**/*"],
+  "exclude": ["**/*.spec.ts", "./utility/joi.browser.ts"]
+}
