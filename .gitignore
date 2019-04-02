@@ -2,3 +2,5 @@ node_modules
 .eslintrc.json
 package-lock.json
 Document.xlsx
+.nyc_output
+coverage
