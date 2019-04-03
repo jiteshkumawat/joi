@@ -12,7 +12,7 @@ export class XmlNode {
   constructor(name: string, attributes?: XmlAttribute[]) {
     this.Name = name;
     this.Attributes = attributes || [];
-    this.ChildNodes = [];
+    this.Children = [];
   }
   /**
    * The Node name
@@ -27,7 +27,7 @@ export class XmlNode {
   /**
    * The Child nodes collection
    */
-  public ChildNodes: XmlNode[];
+  public Children: XmlNode[];
 
   /**
    * Add new attribute to node
@@ -45,7 +45,7 @@ export class XmlNode {
    * @returns - The newly added node
    */
   public addChild(node: XmlNode) {
-    this.ChildNodes.push(node);
+    this.Children.push(node);
     return node;
   }
 
@@ -60,7 +60,7 @@ export class XmlNode {
       attributes += " " + attribute.toString();
     });
 
-    this.ChildNodes.forEach(childNode => {
+    this.Children.forEach(childNode => {
       childString += childNode.toString();
     });
 

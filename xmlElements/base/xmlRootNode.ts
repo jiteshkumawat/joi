@@ -52,7 +52,7 @@ export class XmlRootNode extends XmlNode {
       attributes += " " + attribute.toString();
     });
 
-    this.ChildNodes.forEach(childNode => {
+    this.Children.forEach(childNode => {
       childString += childNode.toString();
     });
 

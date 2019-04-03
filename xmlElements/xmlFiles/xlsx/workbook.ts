@@ -60,7 +60,7 @@ export class Workbook extends XmlFile {
    * Creates a new sheet in workbook and returns
    */
   public createSheet(sheetName?: string) {
-    let sheet = new Sheet(this.sheets.ChildNodes.length, sheetName);
+    let sheet = new Sheet(this.sheets.Children.length, sheetName);
     this.addSheet(sheet);
     return sheet;
   }

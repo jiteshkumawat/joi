@@ -21,12 +21,14 @@
     "jszip": "^3.2.0"
   },
   "devDependencies": {
-    "@types/node": "^11.12.1",
     "@types/chai": "^4.1.7",
     "@types/mocha": "^5.2.6",
+    "@types/node": "^11.12.1",
+    "@types/sinon": "^7.0.11",
     "chai": "^4.2.0",
     "mocha": "^6.0.0",
     "nyc": "^13.3.0",
+    "sinon": "^7.3.1",
     "ts-node": "^8.0.2",
     "typescript": "^3.3.3"
   }

@@ -14,7 +14,7 @@ export class XmlFile {
   constructor(rootNode?: XmlRootNode, fileName?: string, filePath?: string) {
     this.Documentation = new XmlDocumentation();
     this.RootNode = rootNode || null;
-    this.FileName = fileName;
+    this.FileName = fileName || "";
     this.FilePath = filePath || "";
   }
 

@@ -8,7 +8,7 @@ export class XmlAttribute {
    * @param Value - The Value of Attribute
    */
   constructor(name: string, value?: string) {
-    this.Name = name || "";
+    this.Name = name;
     this.Value = value || "";
   }
 
