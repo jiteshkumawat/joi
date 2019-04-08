@@ -26,6 +26,8 @@ export class Workbook extends XmlFile {
       "r"
     );
 
+    this.initializeView();
+
     this.sheets = new XmlNode("sheets");
     this.RootNode.addChild(this.sheets);
     this.TotalSheet = 0;
@@ -37,9 +39,19 @@ export class Workbook extends XmlFile {
   private sheets: XmlNode;
 
   /**
+   * The Workbook Properties
+   */
+  private bookViews: XmlNode;
+
+  /**
    * Total number of sheets
    */
   public TotalSheet: number;
+
+  /**
+   * Index of active tab
+   */
+  public ActiveTab: XmlAttribute;
 
   /**
    * Add a new sheet
@@ -63,5 +75,17 @@ export class Workbook extends XmlFile {
     let sheet = new Sheet(this.sheets.Children.length, sheetName);
     this.addSheet(sheet);
     return sheet;
+  }
+
+  /**
+   * Initilize workbook view
+   */
+  private initializeView() {
+    this.bookViews = new XmlNode("bookViews");
+    this.ActiveTab = new XmlAttribute("activeTab", "0");
+
+    this.bookViews.addChild(new XmlNode("workbookView", [this.ActiveTab]));
+
+    this.RootNode.addChild(this.bookViews);
   }
 }

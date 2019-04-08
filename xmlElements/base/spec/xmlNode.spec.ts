@@ -49,14 +49,14 @@ describe("Xml Node", function() {
       );
     });
   });
-  describe("addAttribute method", function() {
+  describe("attribute method", function() {
     it("Adds an attribute to attributes collection", function() {
       // ARRANGE
       this.xmlNode = new XmlNode("test");
       this.attribute = new XmlAttribute("test");
 
       // ACT
-      this.xmlNode.addAttribute(this.attribute);
+      this.xmlNode.attribute(this.attribute);
 
       // ASSERT
       this.message = `
@@ -73,7 +73,7 @@ describe("Xml Node", function() {
       this.attribute = new XmlAttribute("test");
 
       // ACT
-      this.result = this.xmlNode.addAttribute(this.attribute);
+      this.result = this.xmlNode.attribute(this.attribute);
 
       // ASSERT
       this.message = `
@@ -192,7 +192,7 @@ describe("Xml Node", function() {
       Actual Result: ${this.result}
       Expected Result: <test><child/></test>
       `;
-      expect(this.result).equal('<test><child/></test>');
+      expect(this.result).equal("<test><child/></test>");
     });
 
     it("return stringify result with child nodes", function() {
@@ -212,14 +212,19 @@ describe("Xml Node", function() {
       Actual Result: ${this.result}
       Expected Result: <test><child1/><child2/></test>
       `;
-      expect(this.result).equal('<test><child1/><child2/></test>');
+      expect(this.result).equal("<test><child1/><child2/></test>");
     });
 
     it("return stringify result with child nodes and attributes", function() {
       // ARRANGE
-      this.xmlNode = new XmlNode("test", [new XmlAttribute("attr1", "val1"), new XmlAttribute("attr2", "val2")]);
+      this.xmlNode = new XmlNode("test", [
+        new XmlAttribute("attr1", "val1"),
+        new XmlAttribute("attr2", "val2")
+      ]);
       this.childNode1 = new XmlNode("child1");
-      this.childNode2 = new XmlNode("child2", [new XmlAttribute("attr3", "val3")]);
+      this.childNode2 = new XmlNode("child2", [
+        new XmlAttribute("attr3", "val3")
+      ]);
       this.xmlNode.addChild(this.childNode1);
       this.xmlNode.addChild(this.childNode2);
 
@@ -232,7 +237,9 @@ describe("Xml Node", function() {
       Actual Result: ${this.result}
       Expected Result: <test attr1="val1" attr2="val2"><child1/><child2 attr3="val3"/></test>
       `;
-      expect(this.result).equal('<test attr1="val1" attr2="val2"><child1/><child2 attr3="val3"/></test>');
+      expect(this.result).equal(
+        '<test attr1="val1" attr2="val2"><child1/><child2 attr3="val3"/></test>'
+      );
     });
   });
 });

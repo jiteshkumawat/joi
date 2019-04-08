@@ -39,7 +39,7 @@ var XmlRootNode = (function (_super) {
         this.Attributes.forEach(function (attribute) {
             attributes += " " + attribute.toString();
         });
-        this.ChildNodes.forEach(function (childNode) {
+        this.Children.forEach(function (childNode) {
             childString += childNode.toString();
         });
         if (!childString) {

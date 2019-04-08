@@ -23,6 +23,7 @@ var Workbook = (function (_super) {
     function Workbook() {
         var _this = _super.call(this, new xmlRootNode_1.XmlRootNode("workbook", "http://schemas.openxmlformats.org/spreadsheetml/2006/main"), "workbook.xml", "workbook") || this;
         _this.RootNode.addNamespace("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "r");
+        _this.initializeView();
         _this.sheets = new xmlNode_1.XmlNode("sheets");
         _this.RootNode.addChild(_this.sheets);
         _this.TotalSheet = 0;
@@ -37,9 +38,15 @@ var Workbook = (function (_super) {
         this.TotalSheet++;
     };
     Workbook.prototype.createSheet = function (sheetName) {
-        var sheet = new sheet_1.Sheet(this.sheets.ChildNodes.length, sheetName);
+        var sheet = new sheet_1.Sheet(this.sheets.Children.length, sheetName);
         this.addSheet(sheet);
         return sheet;
+    };
+    Workbook.prototype.initializeView = function () {
+        this.bookViews = new xmlNode_1.XmlNode("bookViews");
+        this.ActiveTab = new xmlAttribute_1.XmlAttribute("activeTab", "0");
+        this.bookViews.addChild(new xmlNode_1.XmlNode("workbookView", [this.ActiveTab]));
+        this.RootNode.addChild(this.bookViews);
     };
     return Workbook;
 }(xmlFile_1.XmlFile));

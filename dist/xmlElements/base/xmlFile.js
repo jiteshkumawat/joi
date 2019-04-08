@@ -5,7 +5,7 @@ var XmlFile = (function () {
     function XmlFile(rootNode, fileName, filePath) {
         this.Documentation = new documentationNode_1.XmlDocumentation();
         this.RootNode = rootNode || null;
-        this.FileName = fileName;
+        this.FileName = fileName || "";
         this.FilePath = filePath || "";
     }
     XmlFile.prototype.addNode = function (node) {

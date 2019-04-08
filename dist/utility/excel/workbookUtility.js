@@ -1,8 +1,8 @@
 "use strict";
 exports.__esModule = true;
 var workbook_1 = require("../../xmlElements/xmlFiles/xlsx/workbook");
-var sheet_1 = require("../../xmlElements/xmlFiles/xlsx/sheet");
 var relationships_1 = require("../../xmlElements/xmlFiles/relationships");
+var sheetUtility_1 = require("./sheetUtility");
 var WorkbookUtility = (function () {
     function WorkbookUtility(eventBus) {
         this.eventBus = eventBus;
@@ -10,14 +10,20 @@ var WorkbookUtility = (function () {
         this.eventBus.trigger("addFile", this.workbook);
         this.relations = new relationships_1.Relationships("workbook.xml.rels", "workbook/_rels");
         this.eventBus.trigger("addFile", this.relations);
+        this.bindListeners();
     }
     WorkbookUtility.prototype.sheet = function (name) {
-        var sheet = new sheet_1.Sheet(this.workbook.TotalSheet + 1, name);
-        this.workbook.addSheet(sheet);
-        this.eventBus.trigger("addFile", sheet);
-        this.eventBus.trigger("addContentType", "Override", "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml", "/" + sheet.FilePath + "/" + sheet.FileName);
-        this.relations.addRelationship("sheets/" + sheet.FileName, "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet", sheet.Id);
-        return sheet;
+        var sheetUtility = new sheetUtility_1.SheetUtility(this.workbook, this.eventBus, name);
+        return sheetUtility;
+    };
+    WorkbookUtility.prototype.bindListeners = function () {
+        var _this = this;
+        this.eventBus.startListening("addWorkbookRelation", function (target, type, id) {
+            _this.relations.addRelationship(target, type, id);
+        });
+        this.eventBus.startListening("activateTab", function (tabNumber) {
+            _this.workbook.ActiveTab.Value = tabNumber.toString(10);
+        });
     };
     return WorkbookUtility;
 }());

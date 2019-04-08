@@ -2,6 +2,7 @@ import { Workbook } from "../../xmlElements/xmlFiles/xlsx/workbook";
 import { EventBus } from "../../shared/eventBus";
 import { Sheet } from "../../xmlElements/xmlFiles/xlsx/sheet";
 import { Relationships } from "../../xmlElements/xmlFiles/relationships";
+import { SheetUtility } from "./sheetUtility";
 
 /**
  * Utility class for workbook
@@ -16,6 +17,7 @@ export class WorkbookUtility {
     this.eventBus.trigger("addFile", this.workbook);
     this.relations = new Relationships("workbook.xml.rels", "workbook/_rels");
     this.eventBus.trigger("addFile", this.relations);
+    this.bindListeners();
   }
 
   /**
@@ -34,22 +36,23 @@ export class WorkbookUtility {
    * @returns The sheet instance
    */
   public sheet(name?: string) {
-    let sheet = new Sheet(this.workbook.TotalSheet + 1, name);
-    this.workbook.addSheet(sheet);
+    let sheetUtility = new SheetUtility(this.workbook, this.eventBus, name);
+    return sheetUtility;
+  }
 
-    this.eventBus.trigger("addFile", sheet);
-    this.eventBus.trigger(
-      "addContentType",
-      "Override",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml",
-      "/" + sheet.FilePath + "/" + sheet.FileName
+  /**
+   * Bind Event Listeners on Bus
+   */
+  private bindListeners() {
+    this.eventBus.startListening(
+      "addWorkbookRelation",
+      (target: string, type: string, id: number) => {
+        this.relations.addRelationship(target, type, id);
+      }
     );
 
-    this.relations.addRelationship(
-      "sheets/" + sheet.FileName,
-      "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet",
-      sheet.Id
-    );
-    return sheet;
+    this.eventBus.startListening("activateTab", (tabNumber: number) => {
+      this.workbook.ActiveTab.Value = tabNumber.toString(10);
+    });
   }
 }
