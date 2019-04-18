@@ -46,7 +46,7 @@ export class Relationships extends XmlFile {
       new XmlAttribute("Type", type),
       new XmlAttribute("Id", "rId" + id.toString(10))
     ]);
-    this.RootNode.addChild(node);
+    this.RootNode.child(node);
     return "rId" + id;
   }
 }

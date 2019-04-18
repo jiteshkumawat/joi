@@ -15,8 +15,17 @@ var __extends = (this && this.__extends) || (function () {
 exports.__esModule = true;
 var xmlNode_1 = require("./xmlNode");
 var xmlAttribute_1 = require("./xmlAttribute");
-var XmlRootNode = (function (_super) {
+/**
+ * Define a new root node of an xml file
+ */
+var XmlRootNode = /** @class */ (function (_super) {
     __extends(XmlRootNode, _super);
+    /**
+     * Creates new instance of XML Root Node
+     * @param name - The Node Name
+     * @param namespace - The Namespace of root node
+     * @param attributes - The Attribute Collection
+     */
     function XmlRootNode(name, namespace, attributes) {
         var _this = _super.call(this, name, attributes) || this;
         _this.Namespaces = [];
@@ -25,12 +34,21 @@ var XmlRootNode = (function (_super) {
         }
         return _this;
     }
+    /**
+     * Add a new namespace in root node
+     * @param namespace - The Namespace string
+     * @param prefix - The prefix string
+     */
     XmlRootNode.prototype.addNamespace = function (namespace, prefix) {
         prefix = prefix ? ":" + prefix : "";
         var namespaceAttr = new xmlAttribute_1.XmlAttribute("xmlns" + prefix, namespace);
         this.Namespaces.push(namespaceAttr);
         return namespaceAttr;
     };
+    /**
+     * Get string representation of a root node
+     * @returns - String representation (<Node Namespace Attributes/>)
+     */
     XmlRootNode.prototype.toString = function () {
         var attributes = "", childString = "", namespace = "";
         this.Namespaces.forEach(function (ns) {

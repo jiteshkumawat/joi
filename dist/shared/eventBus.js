@@ -1,6 +1,12 @@
 "use strict";
 exports.__esModule = true;
-var EventBus = (function () {
+/**
+ * Defines Event Bus implementation
+ */
+var EventBus = /** @class */ (function () {
+    /**
+     * Initialize new Event Bus
+     */
     function EventBus() {
         this.isBrowser = typeof window !== "undefined";
         if (!this.isBrowser) {
@@ -11,6 +17,11 @@ var EventBus = (function () {
             this.eventEmitter = document.createElement("joi_event_emitter");
         }
     }
+    /**
+     * Start listening on an event
+     * @param eventName - The Event Name
+     * @param callback - The callback
+     */
     EventBus.prototype.startListening = function (eventName, callback) {
         if (!this.isBrowser) {
             this.eventEmitter.on(eventName, callback);
@@ -21,6 +32,10 @@ var EventBus = (function () {
             });
         }
     };
+    /**
+     * Stop listeing on an event
+     * @param eventName - The Event Name
+     */
     EventBus.prototype.stopListening = function (eventName) {
         if (!this.isBrowser) {
             this.eventEmitter.off(eventName);
@@ -29,6 +44,11 @@ var EventBus = (function () {
             this.eventEmitter.removeEventListener(event);
         }
     };
+    /**
+     * Triggers a event on bus
+     * @param eventName - The Event Name
+     * @param args - The Event Arguments
+     */
     EventBus.prototype.trigger = function (eventName) {
         var args = [];
         for (var _i = 1; _i < arguments.length; _i++) {
@@ -44,6 +64,9 @@ var EventBus = (function () {
             this.eventEmitter.dispatchEvent(event_1);
         }
     };
+    /**
+     * Destroy all the listeners
+     */
     EventBus.prototype.destroy = function () {
         if (!this.isBrowser) {
             this.eventEmitter.removeAllListeners();

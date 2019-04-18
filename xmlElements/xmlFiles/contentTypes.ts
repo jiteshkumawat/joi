@@ -30,7 +30,7 @@ export class ContentTypes extends XmlFile {
       new XmlAttribute("ContentType", contentType),
       new XmlAttribute("Extension", extension)
     ]);
-    this.RootNode.addChild(defaultNode);
+    this.RootNode.child(defaultNode);
     return defaultNode;
   }
 
@@ -44,7 +44,7 @@ export class ContentTypes extends XmlFile {
       new XmlAttribute("ContentType", contentType),
       new XmlAttribute("PartName", partName)
     ]);
-    this.RootNode.addChild(overrideNode);
+    this.RootNode.child(overrideNode);
     return overrideNode;
   }
 }

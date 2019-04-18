@@ -34,9 +34,12 @@ export class XmlNode {
    * @param node - The new child node to add
    * @returns - The newly added node
    */
-  public addChild(node: XmlNode) {
-    this.Children.push(node);
-    return node;
+  public child(node: string | XmlNode) {
+    if (typeof node === "string") {
+      return this.getChild(node);
+    } else {
+      return this.addChild(node);
+    }
   }
 
   /**
@@ -116,5 +119,32 @@ export class XmlNode {
     });
 
     return attribute;
+  }
+
+  /**
+   * Add new child to node
+   * @param node - The new child node to add
+   * @returns - The newly added node
+   */
+  private addChild(node: XmlNode) {
+    this.Children.push(node);
+    return node;
+  }
+
+  /**
+   * Search for a child node
+   * @param name - The child node name
+   * @returns - The child node
+   */
+  private getChild(name: string): XmlNode {
+    let child: XmlNode = null;
+    this.Children.forEach(a => {
+      if (a.Name === name) {
+        child = a;
+        return a;
+      }
+    });
+
+    return child;
   }
 }

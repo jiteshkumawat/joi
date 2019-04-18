@@ -28,7 +28,7 @@ export class Sheet extends XmlFile {
 
     this.initializeSheetProperties();
     this.sheetData = new XmlNode("sheetData");
-    this.RootNode.addChild(this.sheetData);
+    this.RootNode.child(this.sheetData);
   }
 
   /**
@@ -79,7 +79,7 @@ export class Sheet extends XmlFile {
 
     this.sheetView.Children = [];
 
-    this.sheetView.addChild(this.Pane);
+    this.sheetView.child(this.Pane);
   }
 
   /**
@@ -111,7 +111,81 @@ export class Sheet extends XmlFile {
     }
     const selection = new XmlNode("selection", attributes);
     this.Selections.push(selection);
-    this.sheetView.addChild(selection);
+    this.sheetView.child(selection);
+  }
+
+  /**
+   * Add a new column in sheet
+   * @param min - Col statring number
+   * @param max - Col ending number
+   * @param width - Width of each column
+   * @param bestFit - Determine whether to bestfit width wrt value
+   * @param hidden - Determine if columns are hidden
+   */
+  public addCol(
+    min: number,
+    max: number,
+    width: number,
+    bestFit: boolean,
+    hidden: boolean
+  ) {
+    let cols = this.RootNode.child("cols");
+    if (cols === null) {
+      cols = new XmlNode("cols");
+      for (let index = 0; index < this.RootNode.Children.length; index++) {
+        if (this.RootNode.Children[index].Name === "sheetData") {
+          this.RootNode.Children.splice(index, 0, cols);
+          break;
+        }
+      }
+    }
+
+    const col = new XmlNode("col", [
+      new XmlAttribute("min", min.toString(10)),
+      new XmlAttribute("max", max.toString(10))
+    ]);
+
+    if (width) {
+      col.attribute(new XmlAttribute("width", width.toString(10)));
+      col.attribute(new XmlAttribute("customWidth", "1"));
+    }
+
+    if (bestFit) {
+      col.attribute(new XmlAttribute("bestFit", "1"));
+    }
+
+    if (hidden) {
+      col.attribute(new XmlAttribute("collapsed", "1"));
+      col.attribute(new XmlAttribute("hidden", "1"));
+    }
+
+    cols.child(col);
+    return col;
+  }
+
+  /**
+   * Add a new merge cell in sheet
+   * @param cellRange - The cell range
+   */
+  public mergeCells(cellRange: string) {
+    let mergeCells = this.RootNode.child("mergeCells");
+    if (mergeCells === null) {
+      mergeCells = new XmlNode("mergeCells", [new XmlAttribute("count", "0")]);
+      for (let index = 0; index < this.RootNode.Children.length; index++) {
+        if (this.RootNode.Children[index].Name === "sheetData") {
+          this.RootNode.Children.splice(index + 1, 0, mergeCells);
+          break;
+        }
+      }
+    }
+
+    const mergeCell = new XmlNode("mergeCell", [
+      new XmlAttribute("ref", cellRange)
+    ]);
+    mergeCells.child(mergeCell);
+    mergeCells.attribute("count").Value = mergeCells.Children.length.toString(
+      10
+    );
   }
 
   /**
@@ -124,7 +198,7 @@ export class Sheet extends XmlFile {
 
     this.sheetView.attribute(this.TabSelected);
     this.sheetView.attribute(new XmlAttribute("workbookViewId", "0"));
-    sheetViews.addChild(this.sheetView);
+    sheetViews.child(this.sheetView);
 
     this.Pane = new XmlNode("pane", [
       new XmlAttribute("state", "frozen"),
@@ -134,7 +208,7 @@ export class Sheet extends XmlFile {
       new XmlAttribute("xSplit", "1")
     ]);
     this.Pane.Name = "";
-    this.sheetView.addChild(this.Pane);
+    this.sheetView.child(this.Pane);
 
     this.Selections = [
       new XmlNode("selection", [
@@ -143,8 +217,8 @@ export class Sheet extends XmlFile {
         new XmlAttribute("pane", "bottomRight", false)
       ])
     ];
-    this.sheetView.addChild(this.Selections[0]);
+    this.sheetView.child(this.Selections[0]);
 
-    this.RootNode.addChild(sheetViews);
+    this.RootNode.child(sheetViews);
   }
 }

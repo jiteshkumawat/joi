@@ -5,7 +5,14 @@ var relationships_1 = require("../../xmlElements/xmlFiles/relationships");
 var fileHandler_1 = require("../../shared/fileHandler");
 var eventBus_1 = require("../../shared/eventBus");
 var workbookUtility_1 = require("./workbookUtility");
-var Xlsx = (function () {
+/**
+ * Define a new xlsx / excel file
+ */
+var Xlsx = /** @class */ (function () {
+    /**
+     * Initialize a new xlsx / excel file
+     * @param fileName - The file name
+     */
     function Xlsx(fileName) {
         this.files = [];
         this.initContentTypes();
@@ -16,6 +23,11 @@ var Xlsx = (function () {
         this.bindListeners();
         this.workbookUtility = new workbookUtility_1.WorkbookUtility(this.eventBus);
     }
+    /**
+     * Download the file
+     * @param fileName - The file name to download
+     * @param callback - Callback for download complete
+     */
     Xlsx.prototype.download = function (fileName, callback) {
         fileName = (fileName && fileName.trim()) || this.FileName;
         if (fileName) {
@@ -25,9 +37,17 @@ var Xlsx = (function () {
             return this.fileHandler.saveFile(this.files, fileName, callback);
         }
     };
+    /**
+     * Adds a new sheet to workbook
+     * @param name - The Sheet Name
+     * @returns The Sheet instance
+     */
     Xlsx.prototype.sheet = function (name) {
         return this.workbookUtility.sheet(name);
     };
+    /**
+     * Initialize content types
+     */
     Xlsx.prototype.initContentTypes = function () {
         this.contentTypes = new contentTypes_1.ContentTypes();
         this.files.push(this.contentTypes);
@@ -35,11 +55,17 @@ var Xlsx = (function () {
         this.contentTypes.addDefault("application/xml", "xml");
         this.contentTypes.addOverride("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml", "/workbook/workbook.xml");
     };
+    /**
+     * Initialize relationships
+     */
     Xlsx.prototype.initRels = function () {
         this.relationships = new relationships_1.Relationships();
         this.files.push(this.relationships);
         this.relationships.addRelationship("workbook/workbook.xml", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument");
     };
+    /**
+     * Bind Event Listeners on Bus
+     */
     Xlsx.prototype.bindListeners = function () {
         var _this = this;
         this.eventBus.startListening("addFile", function (file) {

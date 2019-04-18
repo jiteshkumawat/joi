@@ -43,6 +43,7 @@ export class SheetUtility {
     this.IsActive = true;
     this.sheet.TabSelected.Value = "1";
     this.sheet.TabSelected.State = true;
+    return this;
   }
 
   /**
@@ -146,7 +147,7 @@ export class SheetUtility {
       if (numberOfPanes === 0) {
         this.sheet.Pane.Name = "";
         this.sheet.addSelection(column + row);
-        return;
+        return this;
       }
 
       if (row >= (rows || 0) + 1) {
@@ -186,6 +187,44 @@ export class SheetUtility {
         rowString = column + row;
         this.sheet.addSelection(rowString, "bottomRight", null, true);
       }
+    }
+
+    return this;
+  }
+
+  /**
+   *
+   * @param width - Width of column to set
+   * @param colNumberFrom - Column number to start from
+   * @param colNumberTo - Column number to end
+   */
+  public column(options: {
+    from: number;
+    to?: number;
+    width?: number;
+    bestFit?: boolean;
+    hidden?: boolean;
+  }) {
+    this.sheet.addCol(
+      options.from,
+      options.to || options.from,
+      options.width,
+      options.bestFit,
+      options.hidden
+    );
+
+    return this;
+  }
+
+  /**
+   * Merge cells in sheet
+   * @param cellRange - Cell range to merge
+   */
+  public merge(cellRange: string) {
+    if (Util.isCellRangeString(cellRange)) {
+      this.sheet.mergeCells(cellRange);
+    } else {
+      throw "Invalid Cell Range string. The possible values for this are defined by the ST_Sqref.";
     }
   }
 

@@ -3,7 +3,14 @@ exports.__esModule = true;
 var workbook_1 = require("../../xmlElements/xmlFiles/xlsx/workbook");
 var relationships_1 = require("../../xmlElements/xmlFiles/relationships");
 var sheetUtility_1 = require("./sheetUtility");
-var WorkbookUtility = (function () {
+/**
+ * Utility class for workbook
+ */
+var WorkbookUtility = /** @class */ (function () {
+    /**
+     * Instanciate new workbook utility
+     * @param eventBus - Event Bus Instance
+     */
     function WorkbookUtility(eventBus) {
         this.eventBus = eventBus;
         this.workbook = new workbook_1.Workbook();
@@ -12,10 +19,18 @@ var WorkbookUtility = (function () {
         this.eventBus.trigger("addFile", this.relations);
         this.bindListeners();
     }
+    /**
+     * Intantiate new sheet in workbook
+     * @param name - Sheet name
+     * @returns The sheet instance
+     */
     WorkbookUtility.prototype.sheet = function (name) {
         var sheetUtility = new sheetUtility_1.SheetUtility(this.workbook, this.eventBus, name);
         return sheetUtility;
     };
+    /**
+     * Bind Event Listeners on Bus
+     */
     WorkbookUtility.prototype.bindListeners = function () {
         var _this = this;
         this.eventBus.startListening("addWorkbookRelation", function (target, type, id) {

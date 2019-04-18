@@ -17,25 +17,41 @@ var xmlFile_1 = require("../base/xmlFile");
 var xmlRootNode_1 = require("../base/xmlRootNode");
 var xmlNode_1 = require("../base/xmlNode");
 var xmlAttribute_1 = require("../base/xmlAttribute");
-var ContentTypes = (function (_super) {
+/**
+ * Define a new content types file
+ */
+var ContentTypes = /** @class */ (function (_super) {
     __extends(ContentTypes, _super);
+    /**
+     * Creates new instance of content types
+     */
     function ContentTypes() {
         return _super.call(this, new xmlRootNode_1.XmlRootNode("Types", "http://schemas.openxmlformats.org/package/2006/content-types"), "[Content_Types].xml") || this;
     }
+    /**
+     * Add a new default node
+     * @param contentType - The content type string
+     * @param extension - The extension string
+     */
     ContentTypes.prototype.addDefault = function (contentType, extension) {
         var defaultNode = new xmlNode_1.XmlNode("Default", [
             new xmlAttribute_1.XmlAttribute("ContentType", contentType),
             new xmlAttribute_1.XmlAttribute("Extension", extension)
         ]);
-        this.RootNode.addChild(defaultNode);
+        this.RootNode.child(defaultNode);
         return defaultNode;
     };
+    /**
+     * Add a new override node
+     * @param contentType - The content type string
+     * @param partName - The part name string
+     */
     ContentTypes.prototype.addOverride = function (contentType, partName) {
         var overrideNode = new xmlNode_1.XmlNode("Override", [
             new xmlAttribute_1.XmlAttribute("ContentType", contentType),
             new xmlAttribute_1.XmlAttribute("PartName", partName)
         ]);
-        this.RootNode.addChild(overrideNode);
+        this.RootNode.child(overrideNode);
         return overrideNode;
     };
     return ContentTypes;

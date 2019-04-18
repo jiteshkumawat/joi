@@ -2,7 +2,16 @@
 exports.__esModule = true;
 var sheet_1 = require("../../xmlElements/xmlFiles/xlsx/sheet");
 var util_1 = require("../../shared/util");
-var SheetUtility = (function () {
+/**
+ * Sheet Utility Class
+ */
+var SheetUtility = /** @class */ (function () {
+    /**
+     * Initialize an instance of new sheet utility
+     * @param workbook - Workbook containing sheet
+     * @param eventBus - Event Bus instance
+     * @param name - Name of sheet
+     */
     function SheetUtility(workbook, eventBus, name) {
         this.eventBus = eventBus;
         this.sheet = new sheet_1.Sheet(workbook.TotalSheet + 1, name);
@@ -13,12 +22,21 @@ var SheetUtility = (function () {
             this.active();
         }
     }
+    /**
+     * Activate focus the sheet or focus on current tab
+     */
     SheetUtility.prototype.active = function () {
         this.eventBus.trigger("activateTab", this.sheet.Id - 1);
         this.IsActive = true;
         this.sheet.TabSelected.Value = "1";
         this.sheet.TabSelected.State = true;
+        return this;
     };
+    /**
+     * Select a cell or range of cells
+     * @param cell - The cell to select
+     * @param cellRange - The cell range to select
+     */
     SheetUtility.prototype.selectCell = function (cell, cellRange) {
         if (cell) {
             if (util_1.Util.isCellString(cell)) {
@@ -27,6 +45,7 @@ var SheetUtility = (function () {
                     this.sheet.Selections[0].attribute("sqref").Value = cell;
                 }
                 else {
+                    // Search pane
                     var topLeft = this.sheet.Pane.attribute("topLeftCell").Value;
                     var panelDetails = util_1.Util.getCellColumnRow(topLeft);
                     var cellDetails = util_1.Util.getCellColumnRow(cell);
@@ -39,7 +58,7 @@ var SheetUtility = (function () {
                     else {
                         activePane_1 = "topRight";
                         if (cellDetails.columnNumber < panelDetails.columnNumber) {
-                            activePane_1 = "bottomRight";
+                            activePane_1 = "bottomRight"; // "topLeft";
                         }
                     }
                     this.sheet.Selections.forEach(function (selection) {
@@ -62,6 +81,10 @@ var SheetUtility = (function () {
             return this.sheet.Selections[0].attribute("activeCell").Value;
         }
     };
+    /**
+     * Select a range of cells
+     * @param cellRange - The cell range to select
+     */
     SheetUtility.prototype.selectCells = function (cellRange) {
         if (cellRange) {
             if (this.sheet.Selections.length === 1) {
@@ -76,6 +99,7 @@ var SheetUtility = (function () {
                 }
             }
             else {
+                // Search pane
                 this.sheet.Selections.forEach(function (selection) {
                     if (selection.attribute("pane").Value === "bottomRight") {
                         if (util_1.Util.isCellRangeString(cellRange)) {
@@ -90,8 +114,14 @@ var SheetUtility = (function () {
         }
         return this.sheet.Selections[0].attribute("sqref").Value;
     };
+    /**
+     * Freeze rows and columns of sheet
+     * @param rows - Number of rows from first row of sheet to freeze
+     * @param columns - Number of columns from first column of sheet to freeze
+     */
     SheetUtility.prototype.freezePane = function (rows, columns) {
         if (!rows && !columns) {
+            // Remove Pane
             this.sheet.Pane.Name = "";
         }
         else {
@@ -103,7 +133,7 @@ var SheetUtility = (function () {
             if (numberOfPanes === 0) {
                 this.sheet.Pane.Name = "";
                 this.sheet.addSelection(column + row);
-                return;
+                return this;
             }
             if (row >= (rows || 0) + 1) {
                 if (columnNumber < (columns || 0) + 1) {
@@ -113,7 +143,7 @@ var SheetUtility = (function () {
             else {
                 activePane = "topRight";
                 if (columnNumber < (columns || 0) + 1) {
-                    activePane = "bottomRight";
+                    activePane = "bottomRight"; // "topLeft";
                 }
             }
             this.sheet.Pane.Name = "pane";
@@ -143,12 +173,41 @@ var SheetUtility = (function () {
                 this.sheet.addSelection(rowString, "bottomRight", null, true);
             }
         }
+        return this;
     };
+    /**
+     *
+     * @param width - Width of column to set
+     * @param colNumberFrom - Column number to start from
+     * @param colNumberTo - Column number to end
+     */
+    SheetUtility.prototype.column = function (options) {
+        this.sheet.addCol(options.from, options.to || options.from, options.width, options.bestFit, options.hidden);
+        return this;
+    };
+    /**
+     * Merge cells in sheet
+     * @param cellRange - Cell range to merge
+     */
+    SheetUtility.prototype.merge = function (cellRange) {
+        if (util_1.Util.isCellRangeString(cellRange)) {
+            this.sheet.mergeCells(cellRange);
+        }
+        else {
+            throw "Invalid Cell Range string. The possible values for this are defined by the ST_Sqref.";
+        }
+    };
+    /**
+     * Trigger Initialized Events
+     */
     SheetUtility.prototype.triggerInitialize = function () {
         this.eventBus.trigger("addFile", this.sheet);
         this.eventBus.trigger("addContentType", "Override", "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml", "/" + this.sheet.FilePath + "/" + this.sheet.FileName);
         this.eventBus.trigger("addWorkbookRelation", "sheets/" + this.sheet.FileName, "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet", this.sheet.Id);
     };
+    /**
+     * Bind Event Listeners on Bus
+     */
     SheetUtility.prototype.bindListeners = function () {
         var _this = this;
         this.eventBus.startListening("activateTab", function (tabNumber) {
@@ -159,6 +218,11 @@ var SheetUtility = (function () {
             }
         });
     };
+    /**
+     * Calculate pane numbers
+     * @param rows - Total rows for pane
+     * @param columns - Total columns for pane
+     */
     SheetUtility.prototype.calculateNumberOfPanes = function (rows, columns) {
         if (rows < 1 && columns < 1) {
             return 0;

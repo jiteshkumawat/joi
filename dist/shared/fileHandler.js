@@ -1,8 +1,17 @@
 "use strict";
 exports.__esModule = true;
-var FileHandler = (function () {
+/**
+ * Define file handler utility
+ */
+var FileHandler = /** @class */ (function () {
     function FileHandler() {
     }
+    /**
+     * Creates a new js zip instance and saves file
+     * @param files - The collection of files
+     * @param fileName - The file name
+     * @param callback - The callback for Save complete
+     */
     FileHandler.prototype.saveFile = function (files, fileName, callback) {
         if (typeof window !== "undefined") {
             this.saveForBrowser(files, fileName, callback);
@@ -11,6 +20,12 @@ var FileHandler = (function () {
             this.saveForNode(files, fileName, callback);
         }
     };
+    /**
+     * Save file for Browsers
+     * @param files - The collection of files
+     * @param fileName - The file name
+     * @param callback - The callback for save complete
+     */
     FileHandler.prototype.saveForBrowser = function (files, fileName, callback) {
         try {
             var zip_1 = new JSZip();
@@ -57,6 +72,12 @@ var FileHandler = (function () {
             }
         }
     };
+    /**
+     * Save files for node
+     * @param files - The collection of files
+     * @param fileName - The file name
+     * @param callback - The callback for save complete
+     */
     FileHandler.prototype.saveForNode = function (files, fileName, callback) {
         try {
             var jsZip = require("jszip");

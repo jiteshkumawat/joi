@@ -17,13 +17,27 @@ var xmlFile_1 = require("../base/xmlFile");
 var xmlAttribute_1 = require("../base/xmlAttribute");
 var xmlRootNode_1 = require("../base/xmlRootNode");
 var xmlNode_1 = require("../base/xmlNode");
-var Relationships = (function (_super) {
+/**
+ * Define a new relationship file
+ */
+var Relationships = /** @class */ (function (_super) {
     __extends(Relationships, _super);
+    /**
+     * Creates new instance of relationship file
+     * @param fileName - The file name
+     * @param filePath - The file path
+     */
     function Relationships(fileName, filePath) {
         var _this = _super.call(this, new xmlRootNode_1.XmlRootNode("Relationships", "http://schemas.openxmlformats.org/package/2006/relationships"), fileName || ".rels", filePath || "_rels") || this;
         _this.Id = 1;
         return _this;
     }
+    /**
+     * Add new relationship in root node
+     * @param target - The target string
+     * @param type - The type string
+     * @param id - The identity number
+     */
     Relationships.prototype.addRelationship = function (target, type, id) {
         if (!id) {
             id = this.Id++;
@@ -33,7 +47,7 @@ var Relationships = (function (_super) {
             new xmlAttribute_1.XmlAttribute("Type", type),
             new xmlAttribute_1.XmlAttribute("Id", "rId" + id.toString(10))
         ]);
-        this.RootNode.addChild(node);
+        this.RootNode.child(node);
         return "rId" + id;
     };
     return Relationships;

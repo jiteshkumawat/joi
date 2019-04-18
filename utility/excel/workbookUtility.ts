@@ -1,6 +1,5 @@
 import { Workbook } from "../../xmlElements/xmlFiles/xlsx/workbook";
 import { EventBus } from "../../shared/eventBus";
-import { Sheet } from "../../xmlElements/xmlFiles/xlsx/sheet";
 import { Relationships } from "../../xmlElements/xmlFiles/relationships";
 import { SheetUtility } from "./sheetUtility";
 

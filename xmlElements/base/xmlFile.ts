@@ -45,7 +45,7 @@ export class XmlFile {
    */
   public addNode(node: XmlRootNode) {
     if (this.RootNode) {
-      this.RootNode.addChild(node);
+      this.RootNode.child(node);
     } else {
       this.RootNode = node;
     }
