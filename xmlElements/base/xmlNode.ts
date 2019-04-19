@@ -30,7 +30,7 @@ export class XmlNode {
   public Children: XmlNode[];
 
   /**
-   * Add new child to node
+   * Add or get child of node
    * @param node - The new child node to add
    * @returns - The newly added node
    */

@@ -24,6 +24,7 @@ var SheetUtility = /** @class */ (function () {
     }
     /**
      * Activate focus the sheet or focus on current tab
+     * @returns {SheetUtility} - Sheet utility for chaining
      */
     SheetUtility.prototype.active = function () {
         this.eventBus.trigger("activateTab", this.sheet.Id - 1);
@@ -36,6 +37,7 @@ var SheetUtility = /** @class */ (function () {
      * Select a cell or range of cells
      * @param cell - The cell to select
      * @param cellRange - The cell range to select
+     * @returns {string} - The selected cell
      */
     SheetUtility.prototype.selectCell = function (cell, cellRange) {
         if (cell) {
@@ -84,6 +86,7 @@ var SheetUtility = /** @class */ (function () {
     /**
      * Select a range of cells
      * @param cellRange - The cell range to select
+     * @returns {string} - The selected cells range
      */
     SheetUtility.prototype.selectCells = function (cellRange) {
         if (cellRange) {
@@ -118,6 +121,7 @@ var SheetUtility = /** @class */ (function () {
      * Freeze rows and columns of sheet
      * @param rows - Number of rows from first row of sheet to freeze
      * @param columns - Number of columns from first column of sheet to freeze
+     * @returns {SheetUtility} - Sheet utility for chaining
      */
     SheetUtility.prototype.freezePane = function (rows, columns) {
         if (!rows && !columns) {
@@ -180,6 +184,7 @@ var SheetUtility = /** @class */ (function () {
      * @param width - Width of column to set
      * @param colNumberFrom - Column number to start from
      * @param colNumberTo - Column number to end
+     * @returns {SheetUtility} - Sheet utility for chaining
      */
     SheetUtility.prototype.column = function (options) {
         this.sheet.addCol(options.from, options.to || options.from, options.width, options.bestFit, options.hidden);
@@ -188,10 +193,12 @@ var SheetUtility = /** @class */ (function () {
     /**
      * Merge cells in sheet
      * @param cellRange - Cell range to merge
+     * @returns {SheetUtility} - Sheet utility for chaining
      */
     SheetUtility.prototype.merge = function (cellRange) {
         if (util_1.Util.isCellRangeString(cellRange)) {
             this.sheet.mergeCells(cellRange);
+            return this;
         }
         else {
             throw "Invalid Cell Range string. The possible values for this are defined by the ST_Sqref.";

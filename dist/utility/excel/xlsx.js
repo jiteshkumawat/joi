@@ -40,7 +40,7 @@ var Xlsx = /** @class */ (function () {
     /**
      * Adds a new sheet to workbook
      * @param name - The Sheet Name
-     * @returns The Sheet instance
+     * @returns {SheetUtility} - The Sheet instance
      */
     Xlsx.prototype.sheet = function (name) {
         return this.workbookUtility.sheet(name);

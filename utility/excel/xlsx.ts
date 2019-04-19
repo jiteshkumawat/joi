@@ -4,6 +4,7 @@ import { XmlFile } from "../../xmlElements/base/xmlFile";
 import { FileHandler } from "../../shared/fileHandler";
 import { EventBus } from "../../shared/eventBus";
 import { WorkbookUtility } from "./workbookUtility";
+import { SheetUtility } from "./sheetUtility";
 
 /**
  * Define a new xlsx / excel file
@@ -78,9 +79,9 @@ export class Xlsx {
   /**
    * Adds a new sheet to workbook
    * @param name - The Sheet Name
-   * @returns The Sheet instance
+   * @returns {SheetUtility} - The Sheet instance
    */
-  public sheet(name?: string) {
+  public sheet(name?: string): SheetUtility {
     return this.workbookUtility.sheet(name);
   }
 

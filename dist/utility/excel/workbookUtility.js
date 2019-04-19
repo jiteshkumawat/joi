@@ -22,7 +22,7 @@ var WorkbookUtility = /** @class */ (function () {
     /**
      * Intantiate new sheet in workbook
      * @param name - Sheet name
-     * @returns The sheet instance
+     * @returns {SheetUtility} The sheet instance
      */
     WorkbookUtility.prototype.sheet = function (name) {
         var sheetUtility = new sheetUtility_1.SheetUtility(this.workbook, this.eventBus, name);

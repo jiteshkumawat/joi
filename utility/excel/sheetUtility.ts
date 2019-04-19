@@ -37,8 +37,9 @@ export class SheetUtility {
 
   /**
    * Activate focus the sheet or focus on current tab
+   * @returns {SheetUtility} - Sheet utility for chaining
    */
-  public active() {
+  public active(): SheetUtility {
     this.eventBus.trigger("activateTab", this.sheet.Id - 1);
     this.IsActive = true;
     this.sheet.TabSelected.Value = "1";
@@ -50,8 +51,9 @@ export class SheetUtility {
    * Select a cell or range of cells
    * @param cell - The cell to select
    * @param cellRange - The cell range to select
+   * @returns {string} - The selected cell
    */
-  public selectCell(cell?: string, cellRange?: string) {
+  public selectCell(cell?: string, cellRange?: string): string {
     if (cell) {
       if (Util.isCellString(cell)) {
         if (this.sheet.Selections.length === 1) {
@@ -99,8 +101,9 @@ export class SheetUtility {
   /**
    * Select a range of cells
    * @param cellRange - The cell range to select
+   * @returns {string} - The selected cells range
    */
-  public selectCells(cellRange?: string) {
+  public selectCells(cellRange?: string): string {
     if (cellRange) {
       if (this.sheet.Selections.length === 1) {
         if (Util.isCellRangeString(cellRange)) {
@@ -130,8 +133,9 @@ export class SheetUtility {
    * Freeze rows and columns of sheet
    * @param rows - Number of rows from first row of sheet to freeze
    * @param columns - Number of columns from first column of sheet to freeze
+   * @returns {SheetUtility} - Sheet utility for chaining
    */
-  public freezePane(rows?: number, columns?: number) {
+  public freezePane(rows?: number, columns?: number): SheetUtility {
     if (!rows && !columns) {
       // Remove Pane
       this.sheet.Pane.Name = "";
@@ -197,6 +201,7 @@ export class SheetUtility {
    * @param width - Width of column to set
    * @param colNumberFrom - Column number to start from
    * @param colNumberTo - Column number to end
+   * @returns {SheetUtility} - Sheet utility for chaining
    */
   public column(options: {
     from: number;
@@ -204,7 +209,7 @@ export class SheetUtility {
     width?: number;
     bestFit?: boolean;
     hidden?: boolean;
-  }) {
+  }): SheetUtility {
     this.sheet.addCol(
       options.from,
       options.to || options.from,
@@ -219,10 +224,12 @@ export class SheetUtility {
   /**
    * Merge cells in sheet
    * @param cellRange - Cell range to merge
+   * @returns {SheetUtility} - Sheet utility for chaining
    */
-  public merge(cellRange: string) {
+  public merge(cellRange: string): SheetUtility {
     if (Util.isCellRangeString(cellRange)) {
       this.sheet.mergeCells(cellRange);
+      return this;
     } else {
       throw "Invalid Cell Range string. The possible values for this are defined by the ST_Sqref.";
     }

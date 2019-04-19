@@ -32,9 +32,9 @@ export class WorkbookUtility {
   /**
    * Intantiate new sheet in workbook
    * @param name - Sheet name
-   * @returns The sheet instance
+   * @returns {SheetUtility} The sheet instance
    */
-  public sheet(name?: string) {
+  public sheet(name?: string): SheetUtility {
     let sheetUtility = new SheetUtility(this.workbook, this.eventBus, name);
     return sheetUtility;
   }
