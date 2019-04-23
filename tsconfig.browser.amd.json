@@ -7,7 +7,7 @@
     "preserveConstEnums": true,
     "outFile": "dist/joi.browser.amd.js",
     "sourceMap": false,
-    "target": "es3"
+    "target": "es5"
   },
   "include": ["xmlElements/**/*", "utility/**/*"],
   "exclude": ["**/*.spec.ts", "./utility/joi.ts"]

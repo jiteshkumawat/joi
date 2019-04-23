@@ -1,23 +1,24 @@
 "use strict";
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Define a new node of an xml file
  */
 var XmlNode = /** @class */ (function () {
     /**
      * Creates new instance of XML Node
-     * @param name - The Node Name
-     * @param attributes - The Attribute Collection
+     * @param {string} name - The Node Name
+     * @param {XmlAttribute[]} attributes - The Attribute Collection
      */
     function XmlNode(name, attributes) {
-        this.Name = name;
-        this.Attributes = attributes || [];
-        this.Children = [];
+        if (attributes === void 0) { attributes = []; }
+        this.name = name;
+        this.attributes = attributes;
+        this.children = [];
     }
     /**
      * Add or get child of node
-     * @param node - The new child node to add
-     * @returns - The newly added node
+     * @param {string | XmlNode} node - The new child node to add
+     * @returns {XmlNode} - The newly added node
      */
     XmlNode.prototype.child = function (node) {
         if (typeof node === "string") {
@@ -29,8 +30,8 @@ var XmlNode = /** @class */ (function () {
     };
     /**
      * Get or adds Attributes of node
-     * @param attribute - Attribute name or instance. Pass string value to search attribute, and XmlAttribute to add / update.
-     * @returns - The Xml Attribute
+     * @param {string | XmlAttribute} attribute - Attribute name or instance. Pass string value to search attribute, and XmlAttribute to add / update.
+     * @returns {XmlAttribute} - The Xml Attribute
      */
     XmlNode.prototype.attribute = function (attribute) {
         if (typeof attribute === "string") {
@@ -42,56 +43,68 @@ var XmlNode = /** @class */ (function () {
     };
     /**
      * Get string representation of a node
-     * @returns - String representation (<Node Attributes/>)
+     * @returns {string} - String representation (<Node Attributes/>)
      */
     XmlNode.prototype.toString = function () {
-        if (!this.Name) {
+        if (!this.name) {
             return "";
         }
         var attributes = "", childString = "";
-        this.Attributes.forEach(function (attribute) {
+        this.attributes.forEach(function (attribute) {
             attributes = " " + attribute.toString() + attributes;
         });
-        this.Children.forEach(function (childNode) {
+        this.children.forEach(function (childNode) {
             childString += childNode.toString();
         });
         if (!childString) {
-            return "<" + this.Name + attributes + "/>";
+            if (!this.value) {
+                return "<" + this.name + attributes + "/>";
+            }
+            else {
+                return ("<" +
+                    this.name +
+                    attributes +
+                    ">" +
+                    this.value +
+                    "</" +
+                    this.name +
+                    ">");
+            }
         }
         else {
             return ("<" +
-                this.Name +
+                this.name +
                 attributes +
                 ">" +
                 childString +
                 "</" +
-                this.Name +
+                this.name +
                 ">");
         }
     };
     /**
      * Add new attribute to node
-     * @param attribute - The new attribute to add
-     * @returns - The newly added attribute
+     * @param {XmlAttribute} attribute - The new attribute to add
+     * @returns {XmlAttribute} - The newly added attribute
      */
     XmlNode.prototype.addAttribute = function (attribute) {
-        var savedAttr = this.getAttribute(attribute.Name);
+        var savedAttr = this.getAttribute(attribute.name);
         if (savedAttr) {
-            savedAttr.Value = attribute.Value;
+            savedAttr.value = attribute.value;
             return savedAttr;
         }
-        this.Attributes.push(attribute);
+        this.attributes.push(attribute);
         return attribute;
     };
     /**
      * Get Attribute of node
-     * @param name - Name of Attribute
-     * @returns - The Xml Attribute
+     * @param {string} name - Name of Attribute
+     * @returns {XmlAttribute} - The Xml Attribute
      */
     XmlNode.prototype.getAttribute = function (name) {
         var attribute = null;
-        this.Attributes.forEach(function (a) {
-            if (a.Name === name) {
+        this.attributes.forEach(function (a) {
+            if (a.name === name) {
                 attribute = a;
                 return a;
             }
@@ -100,22 +113,22 @@ var XmlNode = /** @class */ (function () {
     };
     /**
      * Add new child to node
-     * @param node - The new child node to add
-     * @returns - The newly added node
+     * @param {XmlNode} node - The new child node to add
+     * @returns {XmlNode} - The newly added node
      */
     XmlNode.prototype.addChild = function (node) {
-        this.Children.push(node);
+        this.children.push(node);
         return node;
     };
     /**
      * Search for a child node
-     * @param name - The child node name
-     * @returns - The child node
+     * @param {string} name - The child node name
+     * @returns {XmlNode} - The child node
      */
     XmlNode.prototype.getChild = function (name) {
         var child = null;
-        this.Children.forEach(function (a) {
-            if (a.Name === name) {
+        this.children.forEach(function (a) {
+            if (a.name === name) {
                 child = a;
                 return a;
             }

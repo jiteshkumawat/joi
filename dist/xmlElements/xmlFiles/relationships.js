@@ -12,7 +12,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 var xmlFile_1 = require("../base/xmlFile");
 var xmlAttribute_1 = require("../base/xmlAttribute");
 var xmlRootNode_1 = require("../base/xmlRootNode");
@@ -24,30 +24,31 @@ var Relationships = /** @class */ (function (_super) {
     __extends(Relationships, _super);
     /**
      * Creates new instance of relationship file
-     * @param fileName - The file name
-     * @param filePath - The file path
+     * @param {string} fileName - The file name
+     * @param {string} filePath - The file path
      */
     function Relationships(fileName, filePath) {
         var _this = _super.call(this, new xmlRootNode_1.XmlRootNode("Relationships", "http://schemas.openxmlformats.org/package/2006/relationships"), fileName || ".rels", filePath || "_rels") || this;
-        _this.Id = 1;
+        _this.id = 1;
         return _this;
     }
     /**
      * Add new relationship in root node
-     * @param target - The target string
-     * @param type - The type string
-     * @param id - The identity number
+     * @param {string} target - The target string
+     * @param {string} type - The type string
+     * @param {number} id - The identity number
+     * @returns {string} - The relationship identifier
      */
     Relationships.prototype.addRelationship = function (target, type, id) {
         if (!id) {
-            id = this.Id++;
+            id = this.id++;
         }
         var node = new xmlNode_1.XmlNode("Relationship", [
             new xmlAttribute_1.XmlAttribute("Target", target),
             new xmlAttribute_1.XmlAttribute("Type", type),
             new xmlAttribute_1.XmlAttribute("Id", "rId" + id.toString(10))
         ]);
-        this.RootNode.child(node);
+        this.rootNode.child(node);
         return "rId" + id;
     };
     return Relationships;

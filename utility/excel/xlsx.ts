@@ -15,120 +15,109 @@ export class Xlsx {
    * @param fileName - The file name
    */
   constructor(fileName?: string) {
-    this.files = [];
-    this.initContentTypes();
-    this.initRels();
-    this.FileName = (fileName && fileName.trim()) || "Document.xlsx";
-    this.fileHandler = new FileHandler();
-    this.eventBus = new EventBus();
-    this.bindListeners();
-    this.workbookUtility = new WorkbookUtility(this.eventBus);
+    let files: XmlFile[] = [];
+    const contentTypes = this.initContentTypes(files);
+    this.initRels(files);
+    this.fileName = (fileName && fileName.trim()) || "Document.xlsx";
+    const fileHandler = new FileHandler();
+    const eventBus = new EventBus();
+    this.bindListeners(contentTypes, files, eventBus);
+    const workbookUtility = new WorkbookUtility(eventBus);
+
+    /**
+     * Download the file
+     * @param {string} fileName - The file name to download
+     * @param {Function} callback - Callback for download complete
+     */
+    this.download = (fn?: string, callback?: Function) => {
+      fn = (fn && fn.trim()) || this.fileName;
+      if (fn) {
+        if (!fn.endsWith(".xlsx")) {
+          fn += ".xlsx";
+        }
+
+        return fileHandler.saveFile(files, fn, callback);
+      }
+    };
+
+    /**
+     * Adds a new sheet to workbook
+     * @param {string} name - The Sheet Name
+     */
+    this.sheet = (name?: string): SheetUtility => {
+      return workbookUtility.sheet(name) as SheetUtility;
+    };
   }
 
   /**
    * The File name
    */
-  public FileName: string;
-
-  /**
-   * The Content types collection
-   */
-  private contentTypes: ContentTypes;
-
-  /**
-   * The relationships collection
-   */
-  private relationships: Relationships;
-
-  /**
-   * The files in compressed xlsx
-   */
-  private files: XmlFile[];
-
-  /**
-   * The File Handler
-   */
-  private fileHandler: FileHandler;
-
-  /**
-   * The Event Bus
-   */
-  private eventBus: EventBus;
-
-  /**
-   * The Workbook Utility Instance
-   */
-  private workbookUtility: WorkbookUtility;
+  public fileName: string;
 
   /**
    * Download the file
-   * @param fileName - The file name to download
-   * @param callback - Callback for download complete
+   * @param {string} fileName - The file name to download
+   * @param {Function} callback - Callback for download complete
    */
-  public download(fileName?: string, callback?: Function) {
-    fileName = (fileName && fileName.trim()) || this.FileName;
-    if (fileName) {
-      if (!fileName.endsWith(".xlsx")) {
-        fileName += ".xlsx";
-      }
-
-      return this.fileHandler.saveFile(this.files, fileName, callback);
-    }
-  }
+  public download: (fileName: string, callback: Function) => any;
 
   /**
    * Adds a new sheet to workbook
-   * @param name - The Sheet Name
-   * @returns {SheetUtility} - The Sheet instance
+   * @param {string} name - The Sheet Name
    */
-  public sheet(name?: string): SheetUtility {
-    return this.workbookUtility.sheet(name);
-  }
+  public sheet: (name?: string) => SheetUtility;
 
   /**
    * Initialize content types
    */
-  private initContentTypes() {
-    this.contentTypes = new ContentTypes();
-    this.files.push(this.contentTypes);
-    this.contentTypes.addDefault(
+  private initContentTypes(files: XmlFile[]) {
+    let contentTypes = new ContentTypes();
+    files.push(contentTypes);
+    contentTypes.addDefault(
       "application/vnd.openxmlformats-package.relationships+xml",
       "rels"
     );
-    this.contentTypes.addDefault("application/xml", "xml");
-    this.contentTypes.addOverride(
+    contentTypes.addDefault("application/xml", "xml");
+    contentTypes.addOverride(
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml",
       "/workbook/workbook.xml"
     );
+    return contentTypes;
   }
 
   /**
    * Initialize relationships
    */
-  private initRels() {
-    this.relationships = new Relationships();
-    this.files.push(this.relationships);
-    this.relationships.addRelationship(
+  private initRels(files: XmlFile[]) {
+    let relationships = new Relationships();
+    files.push(relationships);
+    relationships.addRelationship(
       "workbook/workbook.xml",
       "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument"
     );
+
+    return relationships;
   }
 
   /**
    * Bind Event Listeners on Bus
    */
-  private bindListeners() {
-    this.eventBus.startListening("addFile", (file: XmlFile) => {
-      this.files.push(file);
+  private bindListeners(
+    contentTypes: ContentTypes,
+    files: XmlFile[],
+    eventBus: EventBus
+  ) {
+    eventBus.startListening("addFile", (file: XmlFile) => {
+      files.push(file);
     });
 
-    this.eventBus.startListening(
+    eventBus.startListening(
       "addContentType",
       (type: string, contentType: string, arg: string) => {
         if (type.toLowerCase() === "default") {
-          this.contentTypes.addDefault(contentType, arg);
+          contentTypes.addDefault(contentType, arg);
         } else {
-          this.contentTypes.addOverride(contentType, arg);
+          contentTypes.addOverride(contentType, arg);
         }
       }
     );

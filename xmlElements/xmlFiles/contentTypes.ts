@@ -22,29 +22,31 @@ export class ContentTypes extends XmlFile {
 
   /**
    * Add a new default node
-   * @param contentType - The content type string
-   * @param extension - The extension string
+   * @param {string} contentType - The content type string
+   * @param {string} extension - The extension string
+   * @returns {XmlNode} - The default node
    */
-  public addDefault(contentType: string, extension: string) {
+  public addDefault(contentType: string, extension: string): XmlNode {
     const defaultNode = new XmlNode("Default", [
       new XmlAttribute("ContentType", contentType),
       new XmlAttribute("Extension", extension)
     ]);
-    this.RootNode.child(defaultNode);
+    this.rootNode.child(defaultNode);
     return defaultNode;
   }
 
   /**
    * Add a new override node
-   * @param contentType - The content type string
-   * @param partName - The part name string
+   * @param {string} contentType - The content type string
+   * @param {string} partName - The part name string
+   * @returns {XmlNode} - The override node
    */
-  public addOverride(contentType: string, partName: string) {
+  public addOverride(contentType: string, partName: string): XmlNode {
     const overrideNode = new XmlNode("Override", [
       new XmlAttribute("ContentType", contentType),
       new XmlAttribute("PartName", partName)
     ]);
-    this.RootNode.child(overrideNode);
+    this.rootNode.child(overrideNode);
     return overrideNode;
   }
 }

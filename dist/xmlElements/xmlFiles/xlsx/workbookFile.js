@@ -16,17 +16,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var xmlFile_1 = require("../../base/xmlFile");
 var xmlRootNode_1 = require("../../base/xmlRootNode");
 var xmlNode_1 = require("../../base/xmlNode");
-var sheet_1 = require("./sheet");
+var sheetFile_1 = require("./sheetFile");
 var xmlAttribute_1 = require("../../base/xmlAttribute");
 /**
  * Define new workbook file
  */
-var Workbook = /** @class */ (function (_super) {
-    __extends(Workbook, _super);
+var WorkbookFile = /** @class */ (function (_super) {
+    __extends(WorkbookFile, _super);
     /**
      * Initialize new workbook file
      */
-    function Workbook() {
+    function WorkbookFile() {
         var _this = _super.call(this, new xmlRootNode_1.XmlRootNode("workbook", "http://schemas.openxmlformats.org/spreadsheetml/2006/main"), "workbook.xml", "workbook") || this;
         _this.rootNode.addNamespace("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "r");
         _this.initializeView();
@@ -37,9 +37,9 @@ var Workbook = /** @class */ (function (_super) {
     }
     /**
      * Add a new sheet
-     * @param {Sheet} sheet - The sheet to add
+     * @param {SheetFile} sheet - The sheet to add
      */
-    Workbook.prototype.addSheet = function (sheet) {
+    WorkbookFile.prototype.addSheet = function (sheet) {
         this.sheets.child(new xmlNode_1.XmlNode("sheet", [
             new xmlAttribute_1.XmlAttribute("r:id", sheet.rId),
             new xmlAttribute_1.XmlAttribute("sheetId", sheet.id.toString(10)),
@@ -50,23 +50,23 @@ var Workbook = /** @class */ (function (_super) {
     /**
      * Creates a new sheet in workbook and returns
      * @param {string} sheetName - The sheet name
-     * @returns {Sheet} - The sheet instance
+     * @returns {SheetFile} - The sheet instance
      */
-    Workbook.prototype.createSheet = function (sheetName) {
-        var sheet = new sheet_1.Sheet(this.sheets.children.length, sheetName);
+    WorkbookFile.prototype.createSheet = function (sheetName) {
+        var sheet = new sheetFile_1.SheetFile(this.sheets.children.length, sheetName);
         this.addSheet(sheet);
         return sheet;
     };
     /**
      * Initilize workbook view
      */
-    Workbook.prototype.initializeView = function () {
+    WorkbookFile.prototype.initializeView = function () {
         this.bookViews = new xmlNode_1.XmlNode("bookViews");
         this.activeTab = new xmlAttribute_1.XmlAttribute("activeTab", "0");
         this.bookViews.child(new xmlNode_1.XmlNode("workbookView", [this.activeTab]));
         this.rootNode.child(this.bookViews);
     };
-    return Workbook;
+    return WorkbookFile;
 }(xmlFile_1.XmlFile));
-exports.Workbook = Workbook;
-//# sourceMappingURL=workbook.js.map
+exports.WorkbookFile = WorkbookFile;
+//# sourceMappingURL=workbookFile.js.map

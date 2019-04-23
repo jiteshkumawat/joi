@@ -12,7 +12,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 var xmlFile_1 = require("../base/xmlFile");
 var xmlRootNode_1 = require("../base/xmlRootNode");
 var xmlNode_1 = require("../base/xmlNode");
@@ -30,28 +30,30 @@ var ContentTypes = /** @class */ (function (_super) {
     }
     /**
      * Add a new default node
-     * @param contentType - The content type string
-     * @param extension - The extension string
+     * @param {string} contentType - The content type string
+     * @param {string} extension - The extension string
+     * @returns {XmlNode} - The default node
      */
     ContentTypes.prototype.addDefault = function (contentType, extension) {
         var defaultNode = new xmlNode_1.XmlNode("Default", [
             new xmlAttribute_1.XmlAttribute("ContentType", contentType),
             new xmlAttribute_1.XmlAttribute("Extension", extension)
         ]);
-        this.RootNode.child(defaultNode);
+        this.rootNode.child(defaultNode);
         return defaultNode;
     };
     /**
      * Add a new override node
-     * @param contentType - The content type string
-     * @param partName - The part name string
+     * @param {string} contentType - The content type string
+     * @param {string} partName - The part name string
+     * @returns {XmlNode} - The override node
      */
     ContentTypes.prototype.addOverride = function (contentType, partName) {
         var overrideNode = new xmlNode_1.XmlNode("Override", [
             new xmlAttribute_1.XmlAttribute("ContentType", contentType),
             new xmlAttribute_1.XmlAttribute("PartName", partName)
         ]);
-        this.RootNode.child(overrideNode);
+        this.rootNode.child(overrideNode);
         return overrideNode;
     };
     return ContentTypes;

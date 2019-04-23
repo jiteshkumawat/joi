@@ -17,18 +17,18 @@ var xmlFile_1 = require("../../base/xmlFile");
 var xmlRootNode_1 = require("../../base/xmlRootNode");
 var xmlNode_1 = require("../../base/xmlNode");
 var xmlAttribute_1 = require("../../base/xmlAttribute");
-var row_1 = require("./row");
+var rowNode_1 = require("./rowNode");
 /**
  * Define a sheet xml file
  */
-var Sheet = /** @class */ (function (_super) {
-    __extends(Sheet, _super);
+var SheetFile = /** @class */ (function (_super) {
+    __extends(SheetFile, _super);
     /**
      * Initialize a new sheet in workbook
      * @param {number} index - Index of sheet
      * @param {string} name - Name of sheet
      */
-    function Sheet(index, name) {
+    function SheetFile(index, name) {
         var _this = this;
         index = index || 1;
         _this = _super.call(this, new xmlRootNode_1.XmlRootNode("worksheet", "http://schemas.openxmlformats.org/spreadsheetml/2006/main"), "sheet" + index + ".xml", "workbook/sheets") || this;
@@ -43,7 +43,7 @@ var Sheet = /** @class */ (function (_super) {
     /**
      * Clear the selections from sheet view
      */
-    Sheet.prototype.clearSelections = function () {
+    SheetFile.prototype.clearSelections = function () {
         this.selections = [];
         this.sheetView.children = [];
         this.sheetView.child(this.pane);
@@ -55,7 +55,7 @@ var Sheet = /** @class */ (function (_super) {
      * @param {string} sqref - The sequence reference
      * @param {boolean} paneIsActive - Determine if pane is active
      */
-    Sheet.prototype.addSelection = function (activeCell, pane, sqref, paneIsActive) {
+    SheetFile.prototype.addSelection = function (activeCell, pane, sqref, paneIsActive) {
         var attributes;
         if (activeCell) {
             attributes = [
@@ -84,7 +84,7 @@ var Sheet = /** @class */ (function (_super) {
      * @param {boolean} hidden - Determine if columns are hidden
      * @returns {XmlNode} - The column node
      */
-    Sheet.prototype.addCol = function (min, max, width, bestFit, hidden) {
+    SheetFile.prototype.addCol = function (min, max, width, bestFit, hidden) {
         var cols = this.rootNode.child("cols");
         if (cols === null) {
             cols = new xmlNode_1.XmlNode("cols");
@@ -117,7 +117,7 @@ var Sheet = /** @class */ (function (_super) {
      * Add a new merge cell in sheet
      * @param {string} cellRange - The cell range
      */
-    Sheet.prototype.mergeCells = function (cellRange) {
+    SheetFile.prototype.mergeCells = function (cellRange) {
         var mergeCells = this.rootNode.child("mergeCells");
         if (mergeCells === null) {
             mergeCells = new xmlNode_1.XmlNode("mergeCells", [new xmlAttribute_1.XmlAttribute("count", "0")]);
@@ -136,10 +136,10 @@ var Sheet = /** @class */ (function (_super) {
     };
     /**
      * Get or create and get a new row in sheet
-     * @param {number} index - The Row index
-     * @returns {Row}
+     * @param {number} index - The RowNode index
+     * @returns {RowNode}
      */
-    Sheet.prototype.getRow = function (index) {
+    SheetFile.prototype.getRow = function (index) {
         var sheetRow;
         this.sheetData.children.forEach(function (r) {
             var rno = r.Index;
@@ -155,10 +155,10 @@ var Sheet = /** @class */ (function (_super) {
     };
     /**
      * Get or create and get a new row in sheet
-     * @param {number} index - The Row index
-     * @returns {Row}
+     * @param {number} index - The RowNode index
+     * @returns {RowNode}
      */
-    Sheet.prototype.addRow = function (index) {
+    SheetFile.prototype.addRow = function (index) {
         var position = 0, sheetRow;
         this.sheetData.children.forEach(function (r) {
             var rno = r.Index;
@@ -172,7 +172,7 @@ var Sheet = /** @class */ (function (_super) {
             position++;
         });
         if (!sheetRow) {
-            sheetRow = new row_1.Row(index);
+            sheetRow = new rowNode_1.RowNode(index);
             this.sheetData.children.splice(position, 0, sheetRow);
         }
         return sheetRow;
@@ -180,7 +180,7 @@ var Sheet = /** @class */ (function (_super) {
     /**
      * Initialize sheet default properties
      */
-    Sheet.prototype.initializeSheetProperties = function () {
+    SheetFile.prototype.initializeSheetProperties = function () {
         var sheetViews = new xmlNode_1.XmlNode("sheetViews");
         this.sheetView = new xmlNode_1.XmlNode("sheetView");
         this.tabSelected = new xmlAttribute_1.XmlAttribute("");
@@ -206,7 +206,7 @@ var Sheet = /** @class */ (function (_super) {
         this.sheetView.child(this.selections[0]);
         this.rootNode.child(sheetViews);
     };
-    return Sheet;
+    return SheetFile;
 }(xmlFile_1.XmlFile));
-exports.Sheet = Sheet;
-//# sourceMappingURL=sheet.js.map
+exports.SheetFile = SheetFile;
+//# sourceMappingURL=sheetFile.js.map

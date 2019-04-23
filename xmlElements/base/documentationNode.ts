@@ -4,42 +4,28 @@
 export class XmlDocumentation {
   /**
    * Creates new instance of Documentation Node
-   * @param version - The version of xml
-   * @param encoding - The encoding of xml
-   * @param standalone - Determine xml is standalone or not
+   * @param {string} version - The version of xml
+   * @param {string} encoding - The encoding of xml
+   * @param {boolean} standalone - Determine xml is standalone or not
    */
-  constructor(version?: string, encoding?: string, standalone?: boolean) {
-    this.Version = version || "1.0";
-    this.Encoding = encoding || "UTF-8";
-    this.Standalone = standalone === false ? false : true;
-  }
-  /**
-   * The xml version
-   */
-  public Version: string;
-
-  /**
-   * The xml encoding
-   */
-  public Encoding: string;
-
-  /**
-   * Determine xml is standalone or not
-   */
-  public Standalone: boolean;
+  constructor(
+    public version: string = "1.0",
+    public encoding: string = "UTF-8",
+    public standalone: boolean = true
+  ) {}
 
   /**
    * Get string representation of a documentation
-   * @returns - String representation (<?xml Attributes?>)
+   * @returns {string} - String representation (<?xml Attributes?>)
    */
   public toString(): string {
     return (
       '<?xml version="' +
-      this.Version +
+      this.version +
       '" encoding="' +
-      this.Encoding +
+      this.encoding +
       '" standalone="' +
-      (this.Standalone === true ? "yes" : "no") +
+      (this.standalone === true ? "yes" : "no") +
       '"?>\n'
     );
   }

@@ -7,7 +7,9 @@
     "preserveConstEnums": true,
     "outDir": "dist",
     "sourceMap": true,
-    "types": ["node", "mocha", "chai"]
+    "types": ["node", "mocha", "chai"],
+    "target": "es5",
+    "preserveSymlinks": true
   },
   "include": ["xmlElements/**/*", "utility/**/*"],
   "exclude": ["**/*.spec.ts", "./utility/joi.browser.ts"]

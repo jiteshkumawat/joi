@@ -26,7 +26,8 @@ export class Util {
     let isValid = /^[A-Z]{1,3}[1-9]\d{0,6}$/.test(value);
     if (isValid) {
       const { column, row, columnNumber } = this.getCellColumnRow(value);
-      isValid = columnNumber <= 16384 && row <= 1048576;
+      isValid =
+        this.isValidColumnNumber(columnNumber) && this.isValidRowNumber(row);
     }
     return isValid;
   }
@@ -74,5 +75,23 @@ export class Util {
   public static toColumnString(value: number) {
     // 'A' char code starts from 65
     return String.fromCharCode(64 + value);
+  }
+
+  /**
+   * Test if value is valid row number
+   * @param {number} value - The row number
+   * @returns {boolean} - True if value is valid row
+   */
+  public static isValidRowNumber(value: number): boolean {
+    return value && value > 0 && value <= 1048576;
+  }
+
+  /**
+   * Test if value is valid column number
+   * @param {number} value - The column number
+   * @returns {boolean} - True if value is valid column
+   */
+  public static isValidColumnNumber(value: number): boolean {
+    return value && value > 0 && value <= 16384;
   }
 }

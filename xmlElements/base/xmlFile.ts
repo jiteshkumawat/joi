@@ -1,5 +1,6 @@
 import { XmlDocumentation } from "./documentationNode";
 import { XmlRootNode } from "./xmlRootNode";
+import { XmlNode } from "./xmlNode";
 
 /**
  * Define a new xml file
@@ -7,58 +8,44 @@ import { XmlRootNode } from "./xmlRootNode";
 export class XmlFile {
   /**
    * Creates new instance of xml file
-   * @param rootNode - The root node of xml
-   * @param fileName - The file name of xml
-   * @param filePath - The file path of xml
+   * @param {XmlRootNode} rootNode - The root node of xml
+   * @param {string} fileName - The file name of xml
+   * @param {string} filePath - The file path of xml
    */
-  constructor(rootNode?: XmlRootNode, fileName?: string, filePath?: string) {
-    this.Documentation = new XmlDocumentation();
-    this.RootNode = rootNode || null;
-    this.FileName = fileName || "";
-    this.FilePath = filePath || "";
+  constructor(
+    public rootNode: XmlRootNode = null,
+    public fileName: string = "",
+    public filePath: string = ""
+  ) {
+    this.documentation = new XmlDocumentation();
   }
 
   /**
    * The Documentation node
    */
-  public Documentation: XmlDocumentation;
-
-  /**
-   * The Root node
-   */
-  public RootNode: XmlRootNode;
-
-  /**
-   * The File Name
-   */
-  public FileName: string;
-
-  /**
-   * The File Path
-   */
-  public FilePath: string;
+  public documentation: XmlDocumentation;
 
   /**
    * Add a new node to root node, or defines a new root node
-   * @param node - The new xml node
-   * @returns - The newly added node
+   * @param {XmlNode} node - The new xml node
+   * @returns {XmlNode} - The newly added node
    */
-  public addNode(node: XmlRootNode) {
-    if (this.RootNode) {
-      this.RootNode.child(node);
+  public addNode(node: XmlNode): XmlNode {
+    if (this.rootNode) {
+      this.rootNode.child(node);
     } else {
-      this.RootNode = node;
+      this.rootNode = node as XmlRootNode;
     }
     return node;
   }
 
   /**
    * Get string representation of xml file
-   * @returns - The string content of file
+   * @returns {string} - The string content of file
    */
-  public toString() {
-    const documentation = this.Documentation.toString();
-    const rootNode = this.RootNode ? this.RootNode.toString() : "";
+  public toString(): string {
+    const documentation = this.documentation.toString();
+    const rootNode = this.rootNode ? this.rootNode.toString() : "";
     return documentation + rootNode;
   }
 
@@ -70,11 +57,11 @@ export class XmlFile {
   public saveFile(zipFile: any) {
     const content = this.toString();
     let path: any;
-    if (this.FilePath) {
-      path = zipFile.folder(this.FilePath);
+    if (this.filePath) {
+      path = zipFile.folder(this.filePath);
     }
 
-    (path || zipFile).file(this.FileName, content);
+    (path || zipFile).file(this.fileName, content);
 
     return zipFile;
   }

@@ -1,13 +1,13 @@
 import { XmlFile } from "../../base/xmlFile";
 import { XmlRootNode } from "../../base/xmlRootNode";
 import { XmlNode } from "../../base/xmlNode";
-import { Sheet } from "./sheet";
+import { SheetFile } from "./sheetFile";
 import { XmlAttribute } from "../../base/xmlAttribute";
 
 /**
  * Define new workbook file
  */
-export class Workbook extends XmlFile {
+export class WorkbookFile extends XmlFile {
   /**
    * Initialize new workbook file
    */
@@ -21,7 +21,7 @@ export class Workbook extends XmlFile {
       "workbook"
     );
 
-    this.RootNode.addNamespace(
+    this.rootNode.addNamespace(
       "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
       "r"
     );
@@ -29,8 +29,8 @@ export class Workbook extends XmlFile {
     this.initializeView();
 
     this.sheets = new XmlNode("sheets");
-    this.RootNode.child(this.sheets);
-    this.TotalSheet = 0;
+    this.rootNode.child(this.sheets);
+    this.totalSheet = 0;
   }
 
   /**
@@ -46,33 +46,35 @@ export class Workbook extends XmlFile {
   /**
    * Total number of sheets
    */
-  public TotalSheet: number;
+  public totalSheet: number;
 
   /**
    * Index of active tab
    */
-  public ActiveTab: XmlAttribute;
+  public activeTab: XmlAttribute;
 
   /**
    * Add a new sheet
-   * @param sheet - The sheet to add
+   * @param {SheetFile} sheet - The sheet to add
    */
-  public addSheet(sheet: Sheet) {
+  public addSheet(sheet: SheetFile) {
     this.sheets.child(
       new XmlNode("sheet", [
-        new XmlAttribute("r:id", sheet.RId),
-        new XmlAttribute("sheetId", sheet.Id.toString(10)),
-        new XmlAttribute("name", sheet.Name)
+        new XmlAttribute("r:id", sheet.rId),
+        new XmlAttribute("sheetId", sheet.id.toString(10)),
+        new XmlAttribute("name", sheet.name)
       ])
     );
-    this.TotalSheet++;
+    this.totalSheet++;
   }
 
   /**
    * Creates a new sheet in workbook and returns
+   * @param {string} sheetName - The sheet name
+   * @returns {SheetFile} - The sheet instance
    */
-  public createSheet(sheetName?: string) {
-    let sheet = new Sheet(this.sheets.Children.length, sheetName);
+  public createSheet(sheetName?: string): SheetFile {
+    let sheet = new SheetFile(this.sheets.children.length, sheetName);
     this.addSheet(sheet);
     return sheet;
   }
@@ -82,10 +84,10 @@ export class Workbook extends XmlFile {
    */
   private initializeView() {
     this.bookViews = new XmlNode("bookViews");
-    this.ActiveTab = new XmlAttribute("activeTab", "0");
+    this.activeTab = new XmlAttribute("activeTab", "0");
 
-    this.bookViews.child(new XmlNode("workbookView", [this.ActiveTab]));
+    this.bookViews.child(new XmlNode("workbookView", [this.activeTab]));
 
-    this.RootNode.child(this.bookViews);
+    this.rootNode.child(this.bookViews);
   }
 }

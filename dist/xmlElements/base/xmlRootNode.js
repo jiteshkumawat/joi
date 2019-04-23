@@ -12,7 +12,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 var xmlNode_1 = require("./xmlNode");
 var xmlAttribute_1 = require("./xmlAttribute");
 /**
@@ -22,56 +22,57 @@ var XmlRootNode = /** @class */ (function (_super) {
     __extends(XmlRootNode, _super);
     /**
      * Creates new instance of XML Root Node
-     * @param name - The Node Name
-     * @param namespace - The Namespace of root node
-     * @param attributes - The Attribute Collection
+     * @param {string} name - The Node Name
+     * @param {string} namespace - The Namespace of root node
+     * @param {XmlAttribute[]} attributes - The Attribute Collection
      */
     function XmlRootNode(name, namespace, attributes) {
         var _this = _super.call(this, name, attributes) || this;
-        _this.Namespaces = [];
+        _this.namespaces = [];
         if (namespace) {
-            _this.Namespaces.push(new xmlAttribute_1.XmlAttribute("xmlns", namespace));
+            _this.namespaces.push(new xmlAttribute_1.XmlAttribute("xmlns", namespace));
         }
         return _this;
     }
     /**
      * Add a new namespace in root node
-     * @param namespace - The Namespace string
-     * @param prefix - The prefix string
+     * @param {string} namespace - The Namespace string
+     * @param {string} prefix - The prefix string
+     * @returns {XmlAttribute} - The namespace attribute
      */
     XmlRootNode.prototype.addNamespace = function (namespace, prefix) {
         prefix = prefix ? ":" + prefix : "";
         var namespaceAttr = new xmlAttribute_1.XmlAttribute("xmlns" + prefix, namespace);
-        this.Namespaces.push(namespaceAttr);
+        this.namespaces.push(namespaceAttr);
         return namespaceAttr;
     };
     /**
      * Get string representation of a root node
-     * @returns - String representation (<Node Namespace Attributes/>)
+     * @returns {string} - String representation (<Node Namespace Attributes/>)
      */
     XmlRootNode.prototype.toString = function () {
         var attributes = "", childString = "", namespace = "";
-        this.Namespaces.forEach(function (ns) {
+        this.namespaces.forEach(function (ns) {
             namespace += " " + ns.toString();
         });
-        this.Attributes.forEach(function (attribute) {
+        this.attributes.forEach(function (attribute) {
             attributes += " " + attribute.toString();
         });
-        this.Children.forEach(function (childNode) {
+        this.children.forEach(function (childNode) {
             childString += childNode.toString();
         });
         if (!childString) {
-            return "<" + this.Name + namespace + attributes + "/>";
+            return "<" + this.name + namespace + attributes + "/>";
         }
         else {
             return ("<" +
-                this.Name +
+                this.name +
                 namespace +
                 attributes +
                 ">" +
                 childString +
                 "</" +
-                this.Name +
+                this.name +
                 ">");
         }
     };

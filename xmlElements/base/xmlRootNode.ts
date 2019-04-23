@@ -7,67 +7,68 @@ import { XmlAttribute } from "./xmlAttribute";
 export class XmlRootNode extends XmlNode {
   /**
    * Creates new instance of XML Root Node
-   * @param name - The Node Name
-   * @param namespace - The Namespace of root node
-   * @param attributes - The Attribute Collection
+   * @param {string} name - The Node Name
+   * @param {string} namespace - The Namespace of root node
+   * @param {XmlAttribute[]} attributes - The Attribute Collection
    */
   constructor(name: string, namespace?: string, attributes?: XmlAttribute[]) {
     super(name, attributes);
-    this.Namespaces = [];
+    this.namespaces = [];
     if (namespace) {
-      this.Namespaces.push(new XmlAttribute("xmlns", namespace));
+      this.namespaces.push(new XmlAttribute("xmlns", namespace));
     }
   }
 
   /**
    * The Namespace of root node
    */
-  public Namespaces: XmlAttribute[];
+  public namespaces: XmlAttribute[];
 
   /**
    * Add a new namespace in root node
-   * @param namespace - The Namespace string
-   * @param prefix - The prefix string
+   * @param {string} namespace - The Namespace string
+   * @param {string} prefix - The prefix string
+   * @returns {XmlAttribute} - The namespace attribute
    */
   public addNamespace(namespace: string, prefix?: string) {
     prefix = prefix ? ":" + prefix : "";
     let namespaceAttr = new XmlAttribute("xmlns" + prefix, namespace);
-    this.Namespaces.push(namespaceAttr);
+    this.namespaces.push(namespaceAttr);
     return namespaceAttr;
   }
   /**
    * Get string representation of a root node
-   * @returns - String representation (<Node Namespace Attributes/>)
+   * @returns {string} - String representation (<Node Namespace Attributes/>)
    */
   public toString() {
     let attributes = "",
       childString = "",
       namespace = "";
 
-    this.Namespaces.forEach(ns => {
+    this.namespaces.forEach(ns => {
       namespace += " " + ns.toString();
     });
 
-    this.Attributes.forEach(attribute => {
+    this.attributes.forEach(attribute => {
       attributes += " " + attribute.toString();
     });
 
-    this.Children.forEach(childNode => {
+    this.children.forEach(childNode => {
       childString += childNode.toString();
     });
 
     if (!childString) {
-      return "<" + this.Name + namespace + attributes + "/>";
+      return "<" + this.name + namespace + attributes + "/>";
     } else {
       return (
         "<" +
-        this.Name +
+        this.name +
         namespace +
         attributes +
         ">" +
         childString +
         "</" +
-        this.Name +
+        this.name +
         ">"
       );
     }

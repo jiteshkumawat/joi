@@ -1,4 +1,4 @@
-import { Workbook } from "../../xmlElements/xmlFiles/xlsx/workbook";
+import { WorkbookFile } from "../../xmlElements/xmlFiles/xlsx/workbookFile";
 import { EventBus } from "../../shared/eventBus";
 import { Relationships } from "../../xmlElements/xmlFiles/relationships";
 import { SheetUtility } from "./sheetUtility";
@@ -11,47 +11,48 @@ export class WorkbookUtility {
    * Instanciate new workbook utility
    * @param eventBus - Event Bus Instance
    */
-  constructor(private eventBus: EventBus) {
-    this.workbook = new Workbook();
-    this.eventBus.trigger("addFile", this.workbook);
-    this.relations = new Relationships("workbook.xml.rels", "workbook/_rels");
-    this.eventBus.trigger("addFile", this.relations);
-    this.bindListeners();
+  constructor(eventBus: EventBus) {
+    const workbook = new WorkbookFile();
+    eventBus.trigger("addFile", workbook);
+    const relations = new Relationships("workbook.xml.rels", "workbook/_rels");
+    eventBus.trigger("addFile", relations);
+    this.bindListeners(workbook, relations, eventBus);
+
+    /**
+     * Intantiate new sheet in workbook
+     * @param {string} name - Sheet name
+     * @returns - The sheet instance
+     */
+    this.sheet = (name?: string): SheetUtility => {
+      let sheetUtility = new SheetUtility(workbook, eventBus, name);
+      return sheetUtility;
+    };
   }
-
-  /**
-   * The Workbook
-   */
-  private workbook: Workbook;
-
-  /**
-   * The relationship file
-   */
-  private relations: Relationships;
 
   /**
    * Intantiate new sheet in workbook
-   * @param name - Sheet name
-   * @returns {SheetUtility} The sheet instance
+   * @param {string} name - Sheet name
+   * @returns - The sheet instance
    */
-  public sheet(name?: string): SheetUtility {
-    let sheetUtility = new SheetUtility(this.workbook, this.eventBus, name);
-    return sheetUtility;
-  }
+  public sheet: (name?: string) => SheetUtility;
 
   /**
    * Bind Event Listeners on Bus
    */
-  private bindListeners() {
-    this.eventBus.startListening(
+  private bindListeners(
+    workbook: WorkbookFile,
+    relations: Relationships,
+    eventBus: EventBus
+  ) {
+    eventBus.startListening(
       "addWorkbookRelation",
       (target: string, type: string, id: number) => {
-        this.relations.addRelationship(target, type, id);
+        relations.addRelationship(target, type, id);
       }
     );
 
-    this.eventBus.startListening("activateTab", (tabNumber: number) => {
-      this.workbook.ActiveTab.Value = tabNumber.toString(10);
+    eventBus.startListening("activateTab", (tabNumber: number) => {
+      workbook.activeTab.value = tabNumber.toString(10);
     });
   }
 }

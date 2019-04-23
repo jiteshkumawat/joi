@@ -1,5 +1,5 @@
 "use strict";
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 var contentTypes_1 = require("../../xmlElements/xmlFiles/contentTypes");
 var relationships_1 = require("../../xmlElements/xmlFiles/relationships");
 var fileHandler_1 = require("../../shared/fileHandler");
@@ -14,69 +14,70 @@ var Xlsx = /** @class */ (function () {
      * @param fileName - The file name
      */
     function Xlsx(fileName) {
-        this.files = [];
-        this.initContentTypes();
-        this.initRels();
-        this.FileName = (fileName && fileName.trim()) || "Document.xlsx";
-        this.fileHandler = new fileHandler_1.FileHandler();
-        this.eventBus = new eventBus_1.EventBus();
-        this.bindListeners();
-        this.workbookUtility = new workbookUtility_1.WorkbookUtility(this.eventBus);
-    }
-    /**
-     * Download the file
-     * @param fileName - The file name to download
-     * @param callback - Callback for download complete
-     */
-    Xlsx.prototype.download = function (fileName, callback) {
-        fileName = (fileName && fileName.trim()) || this.FileName;
-        if (fileName) {
-            if (!fileName.endsWith(".xlsx")) {
-                fileName += ".xlsx";
+        var _this = this;
+        var files = [];
+        var contentTypes = this.initContentTypes(files);
+        this.initRels(files);
+        this.fileName = (fileName && fileName.trim()) || "Document.xlsx";
+        var fileHandler = new fileHandler_1.FileHandler();
+        var eventBus = new eventBus_1.EventBus();
+        this.bindListeners(contentTypes, files, eventBus);
+        var workbookUtility = new workbookUtility_1.WorkbookUtility(eventBus);
+        /**
+         * Download the file
+         * @param {string} fileName - The file name to download
+         * @param {Function} callback - Callback for download complete
+         */
+        this.download = function (fn, callback) {
+            fn = (fn && fn.trim()) || _this.fileName;
+            if (fn) {
+                if (!fn.endsWith(".xlsx")) {
+                    fn += ".xlsx";
+                }
+                return fileHandler.saveFile(files, fn, callback);
             }
-            return this.fileHandler.saveFile(this.files, fileName, callback);
-        }
-    };
-    /**
-     * Adds a new sheet to workbook
-     * @param name - The Sheet Name
-     * @returns {SheetUtility} - The Sheet instance
-     */
-    Xlsx.prototype.sheet = function (name) {
-        return this.workbookUtility.sheet(name);
-    };
+        };
+        /**
+         * Adds a new sheet to workbook
+         * @param {string} name - The Sheet Name
+         */
+        this.sheet = function (name) {
+            return workbookUtility.sheet(name);
+        };
+    }
     /**
      * Initialize content types
      */
-    Xlsx.prototype.initContentTypes = function () {
-        this.contentTypes = new contentTypes_1.ContentTypes();
-        this.files.push(this.contentTypes);
-        this.contentTypes.addDefault("application/vnd.openxmlformats-package.relationships+xml", "rels");
-        this.contentTypes.addDefault("application/xml", "xml");
-        this.contentTypes.addOverride("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml", "/workbook/workbook.xml");
+    Xlsx.prototype.initContentTypes = function (files) {
+        var contentTypes = new contentTypes_1.ContentTypes();
+        files.push(contentTypes);
+        contentTypes.addDefault("application/vnd.openxmlformats-package.relationships+xml", "rels");
+        contentTypes.addDefault("application/xml", "xml");
+        contentTypes.addOverride("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml", "/workbook/workbook.xml");
+        return contentTypes;
     };
     /**
      * Initialize relationships
      */
-    Xlsx.prototype.initRels = function () {
-        this.relationships = new relationships_1.Relationships();
-        this.files.push(this.relationships);
-        this.relationships.addRelationship("workbook/workbook.xml", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument");
+    Xlsx.prototype.initRels = function (files) {
+        var relationships = new relationships_1.Relationships();
+        files.push(relationships);
+        relationships.addRelationship("workbook/workbook.xml", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument");
+        return relationships;
     };
     /**
      * Bind Event Listeners on Bus
      */
-    Xlsx.prototype.bindListeners = function () {
-        var _this = this;
-        this.eventBus.startListening("addFile", function (file) {
-            _this.files.push(file);
+    Xlsx.prototype.bindListeners = function (contentTypes, files, eventBus) {
+        eventBus.startListening("addFile", function (file) {
+            files.push(file);
         });
-        this.eventBus.startListening("addContentType", function (type, contentType, arg) {
+        eventBus.startListening("addContentType", function (type, contentType, arg) {
             if (type.toLowerCase() === "default") {
-                _this.contentTypes.addDefault(contentType, arg);
+                contentTypes.addDefault(contentType, arg);
             }
             else {
-                _this.contentTypes.addOverride(contentType, arg);
+                contentTypes.addOverride(contentType, arg);
             }
         });
     };

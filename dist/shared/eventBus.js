@@ -1,5 +1,5 @@
 "use strict";
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Defines Event Bus implementation
  */
@@ -50,11 +50,11 @@ var EventBus = /** @class */ (function () {
      * @param args - The Event Arguments
      */
     EventBus.prototype.trigger = function (eventName) {
-        var _a;
         var args = [];
         for (var _i = 1; _i < arguments.length; _i++) {
             args[_i - 1] = arguments[_i];
         }
+        var _a;
         var detail = args;
         if (!this.isBrowser) {
             (_a = this.eventEmitter).emit.apply(_a, [eventName].concat(args));

@@ -1,27 +1,29 @@
 "use strict";
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Define a new attribute of an xml node
  */
 var XmlAttribute = /** @class */ (function () {
     /**
      * Creates new instance of Attribute
-     * @param Name - The Name of Attribute
-     * @param Value - The Value of Attribute
-     * @param state - The state of attribute
+     * @param {string} name - The Name of Attribute
+     * @param {string} value - The Value of Attribute
+     * @param {boolean} state - The state of attribute
      */
     function XmlAttribute(name, value, state) {
-        this.Name = name;
-        this.Value = value || "";
-        this.State = state !== false;
+        if (value === void 0) { value = ""; }
+        if (state === void 0) { state = true; }
+        this.name = name;
+        this.value = value;
+        this.state = state;
     }
     /**
      * Get string representation of an attribute
-     * @returns - String representation (Name="Value")
+     * @returns {string} - String representation (Name="Value")
      */
     XmlAttribute.prototype.toString = function () {
-        if (this.Name && this.State) {
-            return this.Name + '="' + this.Value + '"';
+        if (this.name && this.state) {
+            return this.name + '="' + this.value + '"';
         }
         else {
             return "";

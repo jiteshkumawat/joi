@@ -2,14 +2,16 @@ import { XmlFile } from "../../base/xmlFile";
 import { XmlRootNode } from "../../base/xmlRootNode";
 import { XmlNode } from "../../base/xmlNode";
 import { XmlAttribute } from "../../base/xmlAttribute";
+import { RowNode } from "./rowNode";
 
 /**
  * Define a sheet xml file
  */
-export class Sheet extends XmlFile {
+export class SheetFile extends XmlFile {
   /**
    * Initialize a new sheet in workbook
-   * @param index - Index of sheet
+   * @param {number} index - Index of sheet
+   * @param {string} name - Name of sheet
    */
   constructor(index?: number, name?: string) {
     index = index || 1;
@@ -22,49 +24,49 @@ export class Sheet extends XmlFile {
       "workbook/sheets"
     );
 
-    this.RId = "rId" + index.toString(10);
-    this.Id = index;
-    this.Name = name || "Sheet" + index.toString(10);
+    this.rId = "rId" + index.toString(10);
+    this.id = index;
+    this.name = name || "Sheet" + index.toString(10);
 
     this.initializeSheetProperties();
     this.sheetData = new XmlNode("sheetData");
-    this.RootNode.child(this.sheetData);
+    this.rootNode.child(this.sheetData);
   }
 
   /**
    * The relation Identity
    */
-  public RId: string;
+  public rId: string;
 
   /**
    * The sheet name
    */
-  public Name: string;
+  public name: string;
 
   /**
    * The Tab selected attribute
    */
-  public TabSelected: XmlAttribute;
+  public tabSelected: XmlAttribute;
 
   /**
    * The Selection node
    */
-  public Selections: XmlNode[];
+  public selections: XmlNode[];
 
   /**
    * The Pane Node
    */
-  public Pane: XmlNode;
+  public pane: XmlNode;
 
   /**
    * The Identity
    */
-  public Id: number;
+  public id: number;
 
   /**
    * Sheet Data node
    */
-  private sheetData: XmlNode;
+  public sheetData: XmlNode;
 
   /**
    * The sheet view node
@@ -75,19 +77,19 @@ export class Sheet extends XmlFile {
    * Clear the selections from sheet view
    */
   public clearSelections() {
-    this.Selections = [];
+    this.selections = [];
 
-    this.sheetView.Children = [];
+    this.sheetView.children = [];
 
-    this.sheetView.child(this.Pane);
+    this.sheetView.child(this.pane);
   }
 
   /**
    * Add a seleciton in sheet view
-   * @param activeCell - The active cell
-   * @param pane - The pane
-   * @param sqref - The sequence reference
-   * @param paneIsActive - Determine if pane is active
+   * @param {string} activeCell - The active cell
+   * @param {string} pane - The pane
+   * @param {string} sqref - The sequence reference
+   * @param {boolean} paneIsActive - Determine if pane is active
    */
   public addSelection(
     activeCell?: string,
@@ -110,17 +112,18 @@ export class Sheet extends XmlFile {
       ];
     }
     const selection = new XmlNode("selection", attributes);
-    this.Selections.push(selection);
+    this.selections.push(selection);
     this.sheetView.child(selection);
   }
 
   /**
    * Add a new column in sheet
-   * @param min - Col statring number
-   * @param max - Col ending number
-   * @param width - Width of each column
-   * @param bestFit - Determine whether to bestfit width wrt value
-   * @param hidden - Determine if columns are hidden
+   * @param {number} min - Col statring number
+   * @param {number} max - Col ending number
+   * @param {number} width - Width of each column
+   * @param {boolean} bestFit - Determine whether to bestfit width wrt value
+   * @param {boolean} hidden - Determine if columns are hidden
+   * @returns {XmlNode} - The column node
    */
   public addCol(
     min: number,
@@ -128,13 +131,13 @@ export class Sheet extends XmlFile {
     width: number,
     bestFit: boolean,
     hidden: boolean
-  ) {
-    let cols = this.RootNode.child("cols");
+  ): XmlNode {
+    let cols = this.rootNode.child("cols");
     if (cols === null) {
       cols = new XmlNode("cols");
-      for (let index = 0; index < this.RootNode.Children.length; index++) {
-        if (this.RootNode.Children[index].Name === "sheetData") {
-          this.RootNode.Children.splice(index, 0, cols);
+      for (let index = 0; index < this.rootNode.children.length; index++) {
+        if (this.rootNode.children[index].name === "sheetData") {
+          this.rootNode.children.splice(index, 0, cols);
           break;
         }
       }
@@ -165,15 +168,15 @@ export class Sheet extends XmlFile {
 
   /**
    * Add a new merge cell in sheet
-   * @param cellRange - The cell range
+   * @param {string} cellRange - The cell range
    */
   public mergeCells(cellRange: string) {
-    let mergeCells = this.RootNode.child("mergeCells");
+    let mergeCells = this.rootNode.child("mergeCells");
     if (mergeCells === null) {
       mergeCells = new XmlNode("mergeCells", [new XmlAttribute("count", "0")]);
-      for (let index = 0; index < this.RootNode.Children.length; index++) {
-        if (this.RootNode.Children[index].Name === "sheetData") {
-          this.RootNode.Children.splice(index + 1, 0, mergeCells);
+      for (let index = 0; index < this.rootNode.children.length; index++) {
+        if (this.rootNode.children[index].name === "sheetData") {
+          this.rootNode.children.splice(index + 1, 0, mergeCells);
           break;
         }
       }
@@ -183,9 +186,58 @@ export class Sheet extends XmlFile {
       new XmlAttribute("ref", cellRange)
     ]);
     mergeCells.child(mergeCell);
-    mergeCells.attribute("count").Value = mergeCells.Children.length.toString(
+    mergeCells.attribute("count").value = mergeCells.children.length.toString(
       10
     );
+  }
+
+  /**
+   * Get or create and get a new row in sheet
+   * @param {number} index - The RowNode index
+   * @returns {RowNode}
+   */
+  public getRow(index: number): RowNode {
+    let sheetRow: RowNode;
+
+    this.sheetData.children.forEach(r => {
+      const rno = (r as RowNode).Index;
+      if (rno > index) {
+        return;
+      } else if (rno === index) {
+        sheetRow = r as RowNode;
+        return;
+      }
+    });
+
+    return sheetRow;
+  }
+
+  /**
+   * Get or create and get a new row in sheet
+   * @param {number} index - The RowNode index
+   * @returns {RowNode}
+   */
+  public addRow(index: number): RowNode {
+    let position: number = 0,
+      sheetRow: RowNode;
+
+    this.sheetData.children.forEach(r => {
+      const rno = (r as RowNode).Index;
+      if (rno > index) {
+        return;
+      } else if (rno === index) {
+        sheetRow = r as RowNode;
+        return;
+      }
+      position++;
+    });
+
+    if (!sheetRow) {
+      sheetRow = new RowNode(index);
+      this.sheetData.children.splice(position, 0, sheetRow);
+    }
+
+    return sheetRow;
   }
 
   /**
@@ -194,31 +246,31 @@ export class Sheet extends XmlFile {
   private initializeSheetProperties() {
     let sheetViews = new XmlNode("sheetViews");
     this.sheetView = new XmlNode("sheetView");
-    this.TabSelected = new XmlAttribute("");
+    this.tabSelected = new XmlAttribute("");
 
-    this.sheetView.attribute(this.TabSelected);
+    this.sheetView.attribute(this.tabSelected);
     this.sheetView.attribute(new XmlAttribute("workbookViewId", "0"));
     sheetViews.child(this.sheetView);
 
-    this.Pane = new XmlNode("pane", [
+    this.pane = new XmlNode("pane", [
       new XmlAttribute("state", "frozen"),
       new XmlAttribute("activePane", "topRight"),
       new XmlAttribute("topLeftCell", "A1"),
       new XmlAttribute("ySplit", "1"),
       new XmlAttribute("xSplit", "1")
     ]);
-    this.Pane.Name = "";
-    this.sheetView.child(this.Pane);
+    this.pane.name = "";
+    this.sheetView.child(this.pane);
 
-    this.Selections = [
+    this.selections = [
       new XmlNode("selection", [
         new XmlAttribute("sqref", "A1"),
         new XmlAttribute("activeCell", "A1"),
         new XmlAttribute("pane", "bottomRight", false)
       ])
     ];
-    this.sheetView.child(this.Selections[0]);
+    this.sheetView.child(this.selections[0]);
 
-    this.RootNode.child(sheetViews);
+    this.rootNode.child(sheetViews);
   }
 }

@@ -1,5 +1,5 @@
 "use strict";
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 var documentationNode_1 = require("./documentationNode");
 /**
  * Define a new xml file
@@ -7,37 +7,40 @@ var documentationNode_1 = require("./documentationNode");
 var XmlFile = /** @class */ (function () {
     /**
      * Creates new instance of xml file
-     * @param rootNode - The root node of xml
-     * @param fileName - The file name of xml
-     * @param filePath - The file path of xml
+     * @param {XmlRootNode} rootNode - The root node of xml
+     * @param {string} fileName - The file name of xml
+     * @param {string} filePath - The file path of xml
      */
     function XmlFile(rootNode, fileName, filePath) {
-        this.Documentation = new documentationNode_1.XmlDocumentation();
-        this.RootNode = rootNode || null;
-        this.FileName = fileName || "";
-        this.FilePath = filePath || "";
+        if (rootNode === void 0) { rootNode = null; }
+        if (fileName === void 0) { fileName = ""; }
+        if (filePath === void 0) { filePath = ""; }
+        this.rootNode = rootNode;
+        this.fileName = fileName;
+        this.filePath = filePath;
+        this.documentation = new documentationNode_1.XmlDocumentation();
     }
     /**
      * Add a new node to root node, or defines a new root node
-     * @param node - The new xml node
-     * @returns - The newly added node
+     * @param {XmlNode} node - The new xml node
+     * @returns {XmlNode} - The newly added node
      */
     XmlFile.prototype.addNode = function (node) {
-        if (this.RootNode) {
-            this.RootNode.child(node);
+        if (this.rootNode) {
+            this.rootNode.child(node);
         }
         else {
-            this.RootNode = node;
+            this.rootNode = node;
         }
         return node;
     };
     /**
      * Get string representation of xml file
-     * @returns - The string content of file
+     * @returns {string} - The string content of file
      */
     XmlFile.prototype.toString = function () {
-        var documentation = this.Documentation.toString();
-        var rootNode = this.RootNode ? this.RootNode.toString() : "";
+        var documentation = this.documentation.toString();
+        var rootNode = this.rootNode ? this.rootNode.toString() : "";
         return documentation + rootNode;
     };
     /**
@@ -48,10 +51,10 @@ var XmlFile = /** @class */ (function () {
     XmlFile.prototype.saveFile = function (zipFile) {
         var content = this.toString();
         var path;
-        if (this.FilePath) {
-            path = zipFile.folder(this.FilePath);
+        if (this.filePath) {
+            path = zipFile.folder(this.filePath);
         }
-        (path || zipFile).file(this.FileName, content);
+        (path || zipFile).file(this.fileName, content);
         return zipFile;
     };
     return XmlFile;

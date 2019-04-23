@@ -1,31 +1,34 @@
 "use strict";
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Define a new documentation node of an xml file
  */
 var XmlDocumentation = /** @class */ (function () {
     /**
      * Creates new instance of Documentation Node
-     * @param version - The version of xml
-     * @param encoding - The encoding of xml
-     * @param standalone - Determine xml is standalone or not
+     * @param {string} version - The version of xml
+     * @param {string} encoding - The encoding of xml
+     * @param {boolean} standalone - Determine xml is standalone or not
      */
     function XmlDocumentation(version, encoding, standalone) {
-        this.Version = version || "1.0";
-        this.Encoding = encoding || "UTF-8";
-        this.Standalone = standalone === false ? false : true;
+        if (version === void 0) { version = "1.0"; }
+        if (encoding === void 0) { encoding = "UTF-8"; }
+        if (standalone === void 0) { standalone = true; }
+        this.version = version;
+        this.encoding = encoding;
+        this.standalone = standalone;
     }
     /**
      * Get string representation of a documentation
-     * @returns - String representation (<?xml Attributes?>)
+     * @returns {string} - String representation (<?xml Attributes?>)
      */
     XmlDocumentation.prototype.toString = function () {
         return ('<?xml version="' +
-            this.Version +
+            this.version +
             '" encoding="' +
-            this.Encoding +
+            this.encoding +
             '" standalone="' +
-            (this.Standalone === true ? "yes" : "no") +
+            (this.standalone === true ? "yes" : "no") +
             '"?>\n');
     };
     return XmlDocumentation;

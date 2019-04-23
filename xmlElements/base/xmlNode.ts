@@ -6,35 +6,26 @@ import { XmlAttribute } from "./xmlAttribute";
 export class XmlNode {
   /**
    * Creates new instance of XML Node
-   * @param name - The Node Name
-   * @param attributes - The Attribute Collection
+   * @param {string} name - The Node Name
+   * @param {XmlAttribute[]} attributes - The Attribute Collection
    */
-  constructor(name: string, attributes?: XmlAttribute[]) {
-    this.Name = name;
-    this.Attributes = attributes || [];
-    this.Children = [];
+  constructor(public name: string, public attributes: XmlAttribute[] = []) {
+    this.children = [];
   }
-  /**
-   * The Node name
-   */
-  public Name: string;
-
-  /**
-   * The Attributes collection
-   */
-  public Attributes: XmlAttribute[];
 
   /**
    * The Child nodes collection
    */
-  public Children: XmlNode[];
+  public children: XmlNode[];
+
+  public value: string;
 
   /**
    * Add or get child of node
-   * @param node - The new child node to add
-   * @returns - The newly added node
+   * @param {string | XmlNode} node - The new child node to add
+   * @returns {XmlNode} - The newly added node
    */
-  public child(node: string | XmlNode) {
+  public child(node: string | XmlNode): XmlNode {
     if (typeof node === "string") {
       return this.getChild(node);
     } else {
@@ -44,8 +35,8 @@ export class XmlNode {
 
   /**
    * Get or adds Attributes of node
-   * @param attribute - Attribute name or instance. Pass string value to search attribute, and XmlAttribute to add / update.
-   * @returns - The Xml Attribute
+   * @param {string | XmlAttribute} attribute - Attribute name or instance. Pass string value to search attribute, and XmlAttribute to add / update.
+   * @returns {XmlAttribute} - The Xml Attribute
    */
   public attribute(attribute: string | XmlAttribute): XmlAttribute {
     if (typeof attribute === "string") {
@@ -57,33 +48,46 @@ export class XmlNode {
 
   /**
    * Get string representation of a node
-   * @returns - String representation (<Node Attributes/>)
+   * @returns {string} - String representation (<Node Attributes/>)
    */
   public toString(): string {
-    if (!this.Name) {
+    if (!this.name) {
       return "";
     }
 
     let attributes = "",
       childString = "";
-    this.Attributes.forEach(attribute => {
+    this.attributes.forEach(attribute => {
       attributes = " " + attribute.toString() + attributes;
     });
-    this.Children.forEach(childNode => {
+    this.children.forEach(childNode => {
       childString += childNode.toString();
     });
 
     if (!childString) {
-      return "<" + this.Name + attributes + "/>";
+      if (!this.value) {
+        return "<" + this.name + attributes + "/>";
+      } else {
+        return (
+          "<" +
+          this.name +
+          attributes +
+          ">" +
+          this.value +
+          "</" +
+          this.name +
+          ">"
+        );
+      }
     } else {
       return (
         "<" +
-        this.Name +
+        this.name +
         attributes +
         ">" +
         childString +
         "</" +
-        this.Name +
+        this.name +
         ">"
       );
     }
@@ -91,28 +95,28 @@ export class XmlNode {
 
   /**
    * Add new attribute to node
-   * @param attribute - The new attribute to add
-   * @returns - The newly added attribute
+   * @param {XmlAttribute} attribute - The new attribute to add
+   * @returns {XmlAttribute} - The newly added attribute
    */
-  private addAttribute(attribute: XmlAttribute) {
-    let savedAttr = this.getAttribute(attribute.Name);
+  private addAttribute(attribute: XmlAttribute): XmlAttribute {
+    let savedAttr = this.getAttribute(attribute.name);
     if (savedAttr) {
-      savedAttr.Value = attribute.Value;
+      savedAttr.value = attribute.value;
       return savedAttr;
     }
-    this.Attributes.push(attribute);
+    this.attributes.push(attribute);
     return attribute;
   }
 
   /**
    * Get Attribute of node
-   * @param name - Name of Attribute
-   * @returns - The Xml Attribute
+   * @param {string} name - Name of Attribute
+   * @returns {XmlAttribute} - The Xml Attribute
    */
   private getAttribute(name: string): XmlAttribute {
     let attribute: XmlAttribute = null;
-    this.Attributes.forEach(a => {
-      if (a.Name === name) {
+    this.attributes.forEach(a => {
+      if (a.name === name) {
         attribute = a;
         return a;
       }
@@ -123,23 +127,23 @@ export class XmlNode {
 
   /**
    * Add new child to node
-   * @param node - The new child node to add
-   * @returns - The newly added node
+   * @param {XmlNode} node - The new child node to add
+   * @returns {XmlNode} - The newly added node
    */
-  private addChild(node: XmlNode) {
-    this.Children.push(node);
+  private addChild(node: XmlNode): XmlNode {
+    this.children.push(node);
     return node;
   }
 
   /**
    * Search for a child node
-   * @param name - The child node name
-   * @returns - The child node
+   * @param {string} name - The child node name
+   * @returns {XmlNode} - The child node
    */
   private getChild(name: string): XmlNode {
     let child: XmlNode = null;
-    this.Children.forEach(a => {
-      if (a.Name === name) {
+    this.children.forEach(a => {
+      if (a.name === name) {
         child = a;
         return a;
       }

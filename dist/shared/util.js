@@ -1,5 +1,5 @@
 "use strict";
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Utility class with static methods to use
  */
@@ -27,7 +27,8 @@ var Util = /** @class */ (function () {
         var isValid = /^[A-Z]{1,3}[1-9]\d{0,6}$/.test(value);
         if (isValid) {
             var _a = this.getCellColumnRow(value), column = _a.column, row = _a.row, columnNumber = _a.columnNumber;
-            isValid = columnNumber <= 16384 && row <= 1048576;
+            isValid =
+                this.isValidColumnNumber(columnNumber) && this.isValidRowNumber(row);
         }
         return isValid;
     };
@@ -71,6 +72,22 @@ var Util = /** @class */ (function () {
     Util.toColumnString = function (value) {
         // 'A' char code starts from 65
         return String.fromCharCode(64 + value);
+    };
+    /**
+     * Test if value is valid row number
+     * @param {number} value - The row number
+     * @returns {boolean} - True if value is valid row
+     */
+    Util.isValidRowNumber = function (value) {
+        return value && value > 0 && value <= 1048576;
+    };
+    /**
+     * Test if value is valid column number
+     * @param {number} value - The column number
+     * @returns {boolean} - True if value is valid column
+     */
+    Util.isValidColumnNumber = function (value) {
+        return value && value > 0 && value <= 16384;
     };
     return Util;
 }());

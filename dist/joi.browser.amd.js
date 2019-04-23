@@ -13,20 +13,23 @@ var __extends = (this && this.__extends) || (function () {
 })();
 define("xmlElements/base/documentationNode", ["require", "exports"], function (require, exports) {
     "use strict";
-    exports.__esModule = true;
+    Object.defineProperty(exports, "__esModule", { value: true });
     var XmlDocumentation = (function () {
         function XmlDocumentation(version, encoding, standalone) {
-            this.Version = version || "1.0";
-            this.Encoding = encoding || "UTF-8";
-            this.Standalone = standalone === false ? false : true;
+            if (version === void 0) { version = "1.0"; }
+            if (encoding === void 0) { encoding = "UTF-8"; }
+            if (standalone === void 0) { standalone = true; }
+            this.version = version;
+            this.encoding = encoding;
+            this.standalone = standalone;
         }
         XmlDocumentation.prototype.toString = function () {
             return ('<?xml version="' +
-                this.Version +
+                this.version +
                 '" encoding="' +
-                this.Encoding +
+                this.encoding +
                 '" standalone="' +
-                (this.Standalone === true ? "yes" : "no") +
+                (this.standalone === true ? "yes" : "no") +
                 '"?>\n');
         };
         return XmlDocumentation;
@@ -35,16 +38,18 @@ define("xmlElements/base/documentationNode", ["require", "exports"], function (r
 });
 define("xmlElements/base/xmlAttribute", ["require", "exports"], function (require, exports) {
     "use strict";
-    exports.__esModule = true;
+    Object.defineProperty(exports, "__esModule", { value: true });
     var XmlAttribute = (function () {
         function XmlAttribute(name, value, state) {
-            this.Name = name;
-            this.Value = value || "";
-            this.State = state !== false;
+            if (value === void 0) { value = ""; }
+            if (state === void 0) { state = true; }
+            this.name = name;
+            this.value = value;
+            this.state = state;
         }
         XmlAttribute.prototype.toString = function () {
-            if (this.Name && this.State) {
-                return this.Name + '="' + this.Value + '"';
+            if (this.name && this.state) {
+                return this.name + '="' + this.value + '"';
             }
             else {
                 return "";
@@ -56,12 +61,13 @@ define("xmlElements/base/xmlAttribute", ["require", "exports"], function (requir
 });
 define("xmlElements/base/xmlNode", ["require", "exports"], function (require, exports) {
     "use strict";
-    exports.__esModule = true;
+    Object.defineProperty(exports, "__esModule", { value: true });
     var XmlNode = (function () {
         function XmlNode(name, attributes) {
-            this.Name = name;
-            this.Attributes = attributes || [];
-            this.Children = [];
+            if (attributes === void 0) { attributes = []; }
+            this.name = name;
+            this.attributes = attributes;
+            this.children = [];
         }
         XmlNode.prototype.child = function (node) {
             if (typeof node === "string") {
@@ -80,43 +86,55 @@ define("xmlElements/base/xmlNode", ["require", "exports"], function (require, ex
             }
         };
         XmlNode.prototype.toString = function () {
-            if (!this.Name) {
+            if (!this.name) {
                 return "";
             }
             var attributes = "", childString = "";
-            this.Attributes.forEach(function (attribute) {
+            this.attributes.forEach(function (attribute) {
                 attributes = " " + attribute.toString() + attributes;
             });
-            this.Children.forEach(function (childNode) {
+            this.children.forEach(function (childNode) {
                 childString += childNode.toString();
             });
             if (!childString) {
-                return "<" + this.Name + attributes + "/>";
+                if (!this.value) {
+                    return "<" + this.name + attributes + "/>";
+                }
+                else {
+                    return ("<" +
+                        this.name +
+                        attributes +
+                        ">" +
+                        this.value +
+                        "</" +
+                        this.name +
+                        ">");
+                }
             }
             else {
                 return ("<" +
-                    this.Name +
+                    this.name +
                     attributes +
                     ">" +
                     childString +
                     "</" +
-                    this.Name +
+                    this.name +
                     ">");
             }
         };
         XmlNode.prototype.addAttribute = function (attribute) {
-            var savedAttr = this.getAttribute(attribute.Name);
+            var savedAttr = this.getAttribute(attribute.name);
             if (savedAttr) {
-                savedAttr.Value = attribute.Value;
+                savedAttr.value = attribute.value;
                 return savedAttr;
             }
-            this.Attributes.push(attribute);
+            this.attributes.push(attribute);
             return attribute;
         };
         XmlNode.prototype.getAttribute = function (name) {
             var attribute = null;
-            this.Attributes.forEach(function (a) {
-                if (a.Name === name) {
+            this.attributes.forEach(function (a) {
+                if (a.name === name) {
                     attribute = a;
                     return a;
                 }
@@ -124,13 +142,13 @@ define("xmlElements/base/xmlNode", ["require", "exports"], function (require, ex
             return attribute;
         };
         XmlNode.prototype.addChild = function (node) {
-            this.Children.push(node);
+            this.children.push(node);
             return node;
         };
         XmlNode.prototype.getChild = function (name) {
             var child = null;
-            this.Children.forEach(function (a) {
-                if (a.Name === name) {
+            this.children.forEach(function (a) {
+                if (a.name === name) {
                     child = a;
                     return a;
                 }
@@ -143,46 +161,46 @@ define("xmlElements/base/xmlNode", ["require", "exports"], function (require, ex
 });
 define("xmlElements/base/xmlRootNode", ["require", "exports", "xmlElements/base/xmlNode", "xmlElements/base/xmlAttribute"], function (require, exports, xmlNode_1, xmlAttribute_1) {
     "use strict";
-    exports.__esModule = true;
+    Object.defineProperty(exports, "__esModule", { value: true });
     var XmlRootNode = (function (_super) {
         __extends(XmlRootNode, _super);
         function XmlRootNode(name, namespace, attributes) {
             var _this = _super.call(this, name, attributes) || this;
-            _this.Namespaces = [];
+            _this.namespaces = [];
             if (namespace) {
-                _this.Namespaces.push(new xmlAttribute_1.XmlAttribute("xmlns", namespace));
+                _this.namespaces.push(new xmlAttribute_1.XmlAttribute("xmlns", namespace));
             }
             return _this;
         }
         XmlRootNode.prototype.addNamespace = function (namespace, prefix) {
             prefix = prefix ? ":" + prefix : "";
             var namespaceAttr = new xmlAttribute_1.XmlAttribute("xmlns" + prefix, namespace);
-            this.Namespaces.push(namespaceAttr);
+            this.namespaces.push(namespaceAttr);
             return namespaceAttr;
         };
         XmlRootNode.prototype.toString = function () {
             var attributes = "", childString = "", namespace = "";
-            this.Namespaces.forEach(function (ns) {
+            this.namespaces.forEach(function (ns) {
                 namespace += " " + ns.toString();
             });
-            this.Attributes.forEach(function (attribute) {
+            this.attributes.forEach(function (attribute) {
                 attributes += " " + attribute.toString();
             });
-            this.Children.forEach(function (childNode) {
+            this.children.forEach(function (childNode) {
                 childString += childNode.toString();
             });
             if (!childString) {
-                return "<" + this.Name + namespace + attributes + "/>";
+                return "<" + this.name + namespace + attributes + "/>";
             }
             else {
                 return ("<" +
-                    this.Name +
+                    this.name +
                     namespace +
                     attributes +
                     ">" +
                     childString +
                     "</" +
-                    this.Name +
+                    this.name +
                     ">");
             }
         };
@@ -192,35 +210,38 @@ define("xmlElements/base/xmlRootNode", ["require", "exports", "xmlElements/base/
 });
 define("xmlElements/base/xmlFile", ["require", "exports", "xmlElements/base/documentationNode"], function (require, exports, documentationNode_1) {
     "use strict";
-    exports.__esModule = true;
+    Object.defineProperty(exports, "__esModule", { value: true });
     var XmlFile = (function () {
         function XmlFile(rootNode, fileName, filePath) {
-            this.Documentation = new documentationNode_1.XmlDocumentation();
-            this.RootNode = rootNode || null;
-            this.FileName = fileName || "";
-            this.FilePath = filePath || "";
+            if (rootNode === void 0) { rootNode = null; }
+            if (fileName === void 0) { fileName = ""; }
+            if (filePath === void 0) { filePath = ""; }
+            this.rootNode = rootNode;
+            this.fileName = fileName;
+            this.filePath = filePath;
+            this.documentation = new documentationNode_1.XmlDocumentation();
         }
         XmlFile.prototype.addNode = function (node) {
-            if (this.RootNode) {
-                this.RootNode.child(node);
+            if (this.rootNode) {
+                this.rootNode.child(node);
             }
             else {
-                this.RootNode = node;
+                this.rootNode = node;
             }
             return node;
         };
         XmlFile.prototype.toString = function () {
-            var documentation = this.Documentation.toString();
-            var rootNode = this.RootNode ? this.RootNode.toString() : "";
+            var documentation = this.documentation.toString();
+            var rootNode = this.rootNode ? this.rootNode.toString() : "";
             return documentation + rootNode;
         };
         XmlFile.prototype.saveFile = function (zipFile) {
             var content = this.toString();
             var path;
-            if (this.FilePath) {
-                path = zipFile.folder(this.FilePath);
+            if (this.filePath) {
+                path = zipFile.folder(this.filePath);
             }
-            (path || zipFile).file(this.FileName, content);
+            (path || zipFile).file(this.fileName, content);
             return zipFile;
         };
         return XmlFile;
@@ -229,7 +250,7 @@ define("xmlElements/base/xmlFile", ["require", "exports", "xmlElements/base/docu
 });
 define("xmlElements/xmlFiles/contentTypes", ["require", "exports", "xmlElements/base/xmlFile", "xmlElements/base/xmlRootNode", "xmlElements/base/xmlNode", "xmlElements/base/xmlAttribute"], function (require, exports, xmlFile_1, xmlRootNode_1, xmlNode_2, xmlAttribute_2) {
     "use strict";
-    exports.__esModule = true;
+    Object.defineProperty(exports, "__esModule", { value: true });
     var ContentTypes = (function (_super) {
         __extends(ContentTypes, _super);
         function ContentTypes() {
@@ -240,7 +261,7 @@ define("xmlElements/xmlFiles/contentTypes", ["require", "exports", "xmlElements/
                 new xmlAttribute_2.XmlAttribute("ContentType", contentType),
                 new xmlAttribute_2.XmlAttribute("Extension", extension)
             ]);
-            this.RootNode.child(defaultNode);
+            this.rootNode.child(defaultNode);
             return defaultNode;
         };
         ContentTypes.prototype.addOverride = function (contentType, partName) {
@@ -248,7 +269,7 @@ define("xmlElements/xmlFiles/contentTypes", ["require", "exports", "xmlElements/
                 new xmlAttribute_2.XmlAttribute("ContentType", contentType),
                 new xmlAttribute_2.XmlAttribute("PartName", partName)
             ]);
-            this.RootNode.child(overrideNode);
+            this.rootNode.child(overrideNode);
             return overrideNode;
         };
         return ContentTypes;
@@ -257,192 +278,241 @@ define("xmlElements/xmlFiles/contentTypes", ["require", "exports", "xmlElements/
 });
 define("xmlElements/xmlFiles/relationships", ["require", "exports", "xmlElements/base/xmlFile", "xmlElements/base/xmlAttribute", "xmlElements/base/xmlRootNode", "xmlElements/base/xmlNode"], function (require, exports, xmlFile_2, xmlAttribute_3, xmlRootNode_2, xmlNode_3) {
     "use strict";
-    exports.__esModule = true;
+    Object.defineProperty(exports, "__esModule", { value: true });
     var Relationships = (function (_super) {
         __extends(Relationships, _super);
         function Relationships(fileName, filePath) {
             var _this = _super.call(this, new xmlRootNode_2.XmlRootNode("Relationships", "http://schemas.openxmlformats.org/package/2006/relationships"), fileName || ".rels", filePath || "_rels") || this;
-            _this.Id = 1;
+            _this.id = 1;
             return _this;
         }
         Relationships.prototype.addRelationship = function (target, type, id) {
             if (!id) {
-                id = this.Id++;
+                id = this.id++;
             }
             var node = new xmlNode_3.XmlNode("Relationship", [
                 new xmlAttribute_3.XmlAttribute("Target", target),
                 new xmlAttribute_3.XmlAttribute("Type", type),
                 new xmlAttribute_3.XmlAttribute("Id", "rId" + id.toString(10))
             ]);
-            this.RootNode.child(node);
+            this.rootNode.child(node);
             return "rId" + id;
         };
         return Relationships;
     }(xmlFile_2.XmlFile));
     exports.Relationships = Relationships;
 });
-define("xmlElements/xmlFiles/xlsx/sheet", ["require", "exports", "xmlElements/base/xmlFile", "xmlElements/base/xmlRootNode", "xmlElements/base/xmlNode", "xmlElements/base/xmlAttribute"], function (require, exports, xmlFile_3, xmlRootNode_3, xmlNode_4, xmlAttribute_4) {
+define("xmlElements/xmlFiles/xlsx/row", ["require", "exports", "xmlElements/base/xmlNode", "xmlElements/base/xmlAttribute"], function (require, exports, xmlNode_4, xmlAttribute_4) {
     "use strict";
-    exports.__esModule = true;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var Row = (function (_super) {
+        __extends(Row, _super);
+        function Row(Index) {
+            var _this = _super.call(this, "row", [new xmlAttribute_4.XmlAttribute("r", Index.toString(10))]) || this;
+            _this.Index = Index;
+            return _this;
+        }
+        Row.prototype.getCell = function (r) {
+            return this.children.find(function (cell) { return cell.name === "cell" && cell.attribute("r").value === r; });
+        };
+        Row.prototype.addCell = function (r) {
+            var cell = this.getCell(r);
+            if (!cell) {
+                cell = new xmlNode_4.XmlNode("cell", [
+                    new xmlAttribute_4.XmlAttribute("r", r),
+                    new xmlAttribute_4.XmlAttribute("t", "inlineStr")
+                ]);
+                this.child(cell);
+            }
+            return cell;
+        };
+        return Row;
+    }(xmlNode_4.XmlNode));
+    exports.Row = Row;
+});
+define("xmlElements/xmlFiles/xlsx/sheet", ["require", "exports", "xmlElements/base/xmlFile", "xmlElements/base/xmlRootNode", "xmlElements/base/xmlNode", "xmlElements/base/xmlAttribute", "xmlElements/xmlFiles/xlsx/row"], function (require, exports, xmlFile_3, xmlRootNode_3, xmlNode_5, xmlAttribute_5, row_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var Sheet = (function (_super) {
         __extends(Sheet, _super);
         function Sheet(index, name) {
             var _this = this;
             index = index || 1;
             _this = _super.call(this, new xmlRootNode_3.XmlRootNode("worksheet", "http://schemas.openxmlformats.org/spreadsheetml/2006/main"), "sheet" + index + ".xml", "workbook/sheets") || this;
-            _this.RId = "rId" + index.toString(10);
-            _this.Id = index;
-            _this.Name = name || "Sheet" + index.toString(10);
+            _this.rId = "rId" + index.toString(10);
+            _this.id = index;
+            _this.name = name || "Sheet" + index.toString(10);
             _this.initializeSheetProperties();
-            _this.sheetData = new xmlNode_4.XmlNode("sheetData");
-            _this.RootNode.child(_this.sheetData);
+            _this.sheetData = new xmlNode_5.XmlNode("sheetData");
+            _this.rootNode.child(_this.sheetData);
             return _this;
         }
         Sheet.prototype.clearSelections = function () {
-            this.Selections = [];
-            this.sheetView.Children = [];
-            this.sheetView.child(this.Pane);
+            this.selections = [];
+            this.sheetView.children = [];
+            this.sheetView.child(this.pane);
         };
         Sheet.prototype.addSelection = function (activeCell, pane, sqref, paneIsActive) {
             var attributes;
             if (activeCell) {
                 attributes = [
-                    new xmlAttribute_4.XmlAttribute("sqref", sqref || activeCell || "A1"),
-                    new xmlAttribute_4.XmlAttribute("activeCell", activeCell || "A1"),
-                    new xmlAttribute_4.XmlAttribute("pane", pane || "bottomRight", paneIsActive || false)
+                    new xmlAttribute_5.XmlAttribute("sqref", sqref || activeCell || "A1"),
+                    new xmlAttribute_5.XmlAttribute("activeCell", activeCell || "A1"),
+                    new xmlAttribute_5.XmlAttribute("pane", pane || "bottomRight", paneIsActive || false)
                 ];
             }
             else {
                 attributes = [
-                    new xmlAttribute_4.XmlAttribute("sqref", sqref || activeCell || "A1", false),
-                    new xmlAttribute_4.XmlAttribute("activeCell", activeCell || "A1", false),
-                    new xmlAttribute_4.XmlAttribute("pane", pane || "bottomRight", paneIsActive || false)
+                    new xmlAttribute_5.XmlAttribute("sqref", sqref || activeCell || "A1", false),
+                    new xmlAttribute_5.XmlAttribute("activeCell", activeCell || "A1", false),
+                    new xmlAttribute_5.XmlAttribute("pane", pane || "bottomRight", paneIsActive || false)
                 ];
             }
-            var selection = new xmlNode_4.XmlNode("selection", attributes);
-            this.Selections.push(selection);
+            var selection = new xmlNode_5.XmlNode("selection", attributes);
+            this.selections.push(selection);
             this.sheetView.child(selection);
         };
         Sheet.prototype.addCol = function (min, max, width, bestFit, hidden) {
-            var cols = this.RootNode.child("cols");
+            var cols = this.rootNode.child("cols");
             if (cols === null) {
-                cols = new xmlNode_4.XmlNode("cols");
-                for (var index = 0; index < this.RootNode.Children.length; index++) {
-                    if (this.RootNode.Children[index].Name === "sheetData") {
-                        this.RootNode.Children.splice(index, 0, cols);
+                cols = new xmlNode_5.XmlNode("cols");
+                for (var index = 0; index < this.rootNode.children.length; index++) {
+                    if (this.rootNode.children[index].name === "sheetData") {
+                        this.rootNode.children.splice(index, 0, cols);
                         break;
                     }
                 }
             }
-            var col = new xmlNode_4.XmlNode("col", [
-                new xmlAttribute_4.XmlAttribute("min", min.toString(10)),
-                new xmlAttribute_4.XmlAttribute("max", max.toString(10))
+            var col = new xmlNode_5.XmlNode("col", [
+                new xmlAttribute_5.XmlAttribute("min", min.toString(10)),
+                new xmlAttribute_5.XmlAttribute("max", max.toString(10))
             ]);
             if (width) {
-                col.attribute(new xmlAttribute_4.XmlAttribute("width", width.toString(10)));
-                col.attribute(new xmlAttribute_4.XmlAttribute("customWidth", "1"));
+                col.attribute(new xmlAttribute_5.XmlAttribute("width", width.toString(10)));
+                col.attribute(new xmlAttribute_5.XmlAttribute("customWidth", "1"));
             }
             if (bestFit) {
-                col.attribute(new xmlAttribute_4.XmlAttribute("bestFit", "1"));
+                col.attribute(new xmlAttribute_5.XmlAttribute("bestFit", "1"));
             }
             if (hidden) {
-                col.attribute(new xmlAttribute_4.XmlAttribute("collapsed", "1"));
-                col.attribute(new xmlAttribute_4.XmlAttribute("hidden", "1"));
+                col.attribute(new xmlAttribute_5.XmlAttribute("collapsed", "1"));
+                col.attribute(new xmlAttribute_5.XmlAttribute("hidden", "1"));
             }
             cols.child(col);
             return col;
         };
         Sheet.prototype.mergeCells = function (cellRange) {
-            var mergeCells = this.RootNode.child("mergeCells");
+            var mergeCells = this.rootNode.child("mergeCells");
             if (mergeCells === null) {
-                mergeCells = new xmlNode_4.XmlNode("mergeCells", [new xmlAttribute_4.XmlAttribute("count", "0")]);
-                for (var index = 0; index < this.RootNode.Children.length; index++) {
-                    if (this.RootNode.Children[index].Name === "sheetData") {
-                        this.RootNode.Children.splice(index + 1, 0, mergeCells);
+                mergeCells = new xmlNode_5.XmlNode("mergeCells", [new xmlAttribute_5.XmlAttribute("count", "0")]);
+                for (var index = 0; index < this.rootNode.children.length; index++) {
+                    if (this.rootNode.children[index].name === "sheetData") {
+                        this.rootNode.children.splice(index + 1, 0, mergeCells);
                         break;
                     }
                 }
             }
-            var mergeCell = new xmlNode_4.XmlNode("mergeCell", [
-                new xmlAttribute_4.XmlAttribute("ref", cellRange)
+            var mergeCell = new xmlNode_5.XmlNode("mergeCell", [
+                new xmlAttribute_5.XmlAttribute("ref", cellRange)
             ]);
             mergeCells.child(mergeCell);
-            mergeCells.attribute("count").Value = mergeCells.Children.length.toString(10);
+            mergeCells.attribute("count").value = mergeCells.children.length.toString(10);
+        };
+        Sheet.prototype.getRow = function (index) {
+            var sheetRow;
+            this.sheetData.children.forEach(function (r) {
+                var rno = r.Index;
+                if (rno > index) {
+                    return;
+                }
+                else if (rno === index) {
+                    sheetRow = r;
+                    return;
+                }
+            });
+            return sheetRow;
+        };
+        Sheet.prototype.addRow = function (index) {
+            var position = 0, sheetRow;
+            this.sheetData.children.forEach(function (r) {
+                var rno = r.Index;
+                if (rno > index) {
+                    return;
+                }
+                else if (rno === index) {
+                    sheetRow = r;
+                    return;
+                }
+                position++;
+            });
+            if (!sheetRow) {
+                sheetRow = new row_1.Row(index);
+                this.sheetData.children.splice(position, 0, sheetRow);
+            }
+            return sheetRow;
         };
         Sheet.prototype.initializeSheetProperties = function () {
-            var sheetViews = new xmlNode_4.XmlNode("sheetViews");
-            this.sheetView = new xmlNode_4.XmlNode("sheetView");
-            this.TabSelected = new xmlAttribute_4.XmlAttribute("");
-            this.sheetView.attribute(this.TabSelected);
-            this.sheetView.attribute(new xmlAttribute_4.XmlAttribute("workbookViewId", "0"));
+            var sheetViews = new xmlNode_5.XmlNode("sheetViews");
+            this.sheetView = new xmlNode_5.XmlNode("sheetView");
+            this.tabSelected = new xmlAttribute_5.XmlAttribute("");
+            this.sheetView.attribute(this.tabSelected);
+            this.sheetView.attribute(new xmlAttribute_5.XmlAttribute("workbookViewId", "0"));
             sheetViews.child(this.sheetView);
-            this.Pane = new xmlNode_4.XmlNode("pane", [
-                new xmlAttribute_4.XmlAttribute("state", "frozen"),
-                new xmlAttribute_4.XmlAttribute("activePane", "topRight"),
-                new xmlAttribute_4.XmlAttribute("topLeftCell", "A1"),
-                new xmlAttribute_4.XmlAttribute("ySplit", "1"),
-                new xmlAttribute_4.XmlAttribute("xSplit", "1")
+            this.pane = new xmlNode_5.XmlNode("pane", [
+                new xmlAttribute_5.XmlAttribute("state", "frozen"),
+                new xmlAttribute_5.XmlAttribute("activePane", "topRight"),
+                new xmlAttribute_5.XmlAttribute("topLeftCell", "A1"),
+                new xmlAttribute_5.XmlAttribute("ySplit", "1"),
+                new xmlAttribute_5.XmlAttribute("xSplit", "1")
             ]);
-            this.Pane.Name = "";
-            this.sheetView.child(this.Pane);
-            this.Selections = [
-                new xmlNode_4.XmlNode("selection", [
-                    new xmlAttribute_4.XmlAttribute("sqref", "A1"),
-                    new xmlAttribute_4.XmlAttribute("activeCell", "A1"),
-                    new xmlAttribute_4.XmlAttribute("pane", "bottomRight", false)
+            this.pane.name = "";
+            this.sheetView.child(this.pane);
+            this.selections = [
+                new xmlNode_5.XmlNode("selection", [
+                    new xmlAttribute_5.XmlAttribute("sqref", "A1"),
+                    new xmlAttribute_5.XmlAttribute("activeCell", "A1"),
+                    new xmlAttribute_5.XmlAttribute("pane", "bottomRight", false)
                 ])
             ];
-            this.sheetView.child(this.Selections[0]);
-            this.RootNode.child(sheetViews);
+            this.sheetView.child(this.selections[0]);
+            this.rootNode.child(sheetViews);
         };
         return Sheet;
     }(xmlFile_3.XmlFile));
     exports.Sheet = Sheet;
 });
-define("xmlElements/xmlFiles/xlsx/sheetData", ["require", "exports", "xmlElements/base/xmlNode"], function (require, exports, xmlNode_5) {
+define("xmlElements/xmlFiles/xlsx/workbook", ["require", "exports", "xmlElements/base/xmlFile", "xmlElements/base/xmlRootNode", "xmlElements/base/xmlNode", "xmlElements/xmlFiles/xlsx/sheet", "xmlElements/base/xmlAttribute"], function (require, exports, xmlFile_4, xmlRootNode_4, xmlNode_6, sheet_1, xmlAttribute_6) {
     "use strict";
-    exports.__esModule = true;
-    var SheetData = (function (_super) {
-        __extends(SheetData, _super);
-        function SheetData() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        return SheetData;
-    }(xmlNode_5.XmlNode));
-    exports.SheetData = SheetData;
-});
-define("xmlElements/xmlFiles/xlsx/workbook", ["require", "exports", "xmlElements/base/xmlFile", "xmlElements/base/xmlRootNode", "xmlElements/base/xmlNode", "xmlElements/xmlFiles/xlsx/sheet", "xmlElements/base/xmlAttribute"], function (require, exports, xmlFile_4, xmlRootNode_4, xmlNode_6, sheet_1, xmlAttribute_5) {
-    "use strict";
-    exports.__esModule = true;
+    Object.defineProperty(exports, "__esModule", { value: true });
     var Workbook = (function (_super) {
         __extends(Workbook, _super);
         function Workbook() {
             var _this = _super.call(this, new xmlRootNode_4.XmlRootNode("workbook", "http://schemas.openxmlformats.org/spreadsheetml/2006/main"), "workbook.xml", "workbook") || this;
-            _this.RootNode.addNamespace("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "r");
+            _this.rootNode.addNamespace("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "r");
             _this.initializeView();
             _this.sheets = new xmlNode_6.XmlNode("sheets");
-            _this.RootNode.child(_this.sheets);
-            _this.TotalSheet = 0;
+            _this.rootNode.child(_this.sheets);
+            _this.totalSheet = 0;
             return _this;
         }
         Workbook.prototype.addSheet = function (sheet) {
             this.sheets.child(new xmlNode_6.XmlNode("sheet", [
-                new xmlAttribute_5.XmlAttribute("r:id", sheet.RId),
-                new xmlAttribute_5.XmlAttribute("sheetId", sheet.Id.toString(10)),
-                new xmlAttribute_5.XmlAttribute("name", sheet.Name)
+                new xmlAttribute_6.XmlAttribute("r:id", sheet.rId),
+                new xmlAttribute_6.XmlAttribute("sheetId", sheet.id.toString(10)),
+                new xmlAttribute_6.XmlAttribute("name", sheet.name)
             ]));
-            this.TotalSheet++;
+            this.totalSheet++;
         };
         Workbook.prototype.createSheet = function (sheetName) {
-            var sheet = new sheet_1.Sheet(this.sheets.Children.length, sheetName);
+            var sheet = new sheet_1.Sheet(this.sheets.children.length, sheetName);
             this.addSheet(sheet);
             return sheet;
         };
         Workbook.prototype.initializeView = function () {
             this.bookViews = new xmlNode_6.XmlNode("bookViews");
-            this.ActiveTab = new xmlAttribute_5.XmlAttribute("activeTab", "0");
-            this.bookViews.child(new xmlNode_6.XmlNode("workbookView", [this.ActiveTab]));
-            this.RootNode.child(this.bookViews);
+            this.activeTab = new xmlAttribute_6.XmlAttribute("activeTab", "0");
+            this.bookViews.child(new xmlNode_6.XmlNode("workbookView", [this.activeTab]));
+            this.rootNode.child(this.bookViews);
         };
         return Workbook;
     }(xmlFile_4.XmlFile));
@@ -450,7 +520,7 @@ define("xmlElements/xmlFiles/xlsx/workbook", ["require", "exports", "xmlElements
 });
 define("shared/fileHandler", ["require", "exports"], function (require, exports) {
     "use strict";
-    exports.__esModule = true;
+    Object.defineProperty(exports, "__esModule", { value: true });
     var FileHandler = (function () {
         function FileHandler() {
         }
@@ -544,7 +614,7 @@ define("shared/fileHandler", ["require", "exports"], function (require, exports)
 });
 define("shared/eventBus", ["require", "exports"], function (require, exports) {
     "use strict";
-    exports.__esModule = true;
+    Object.defineProperty(exports, "__esModule", { value: true });
     var EventBus = (function () {
         function EventBus() {
             this.isBrowser = typeof window !== "undefined";
@@ -605,7 +675,7 @@ define("shared/eventBus", ["require", "exports"], function (require, exports) {
 });
 define("shared/util", ["require", "exports"], function (require, exports) {
     "use strict";
-    exports.__esModule = true;
+    Object.defineProperty(exports, "__esModule", { value: true });
     var Util = (function () {
         function Util() {
         }
@@ -613,7 +683,8 @@ define("shared/util", ["require", "exports"], function (require, exports) {
             var isValid = /^[A-Z]{1,3}[1-9]\d{0,6}$/.test(value);
             if (isValid) {
                 var _a = this.getCellColumnRow(value), column = _a.column, row = _a.row, columnNumber = _a.columnNumber;
-                isValid = columnNumber <= 16384 && row <= 1048576;
+                isValid =
+                    this.isValidColumnNumber(columnNumber) && this.isValidRowNumber(row);
             }
             return isValid;
         };
@@ -642,40 +713,190 @@ define("shared/util", ["require", "exports"], function (require, exports) {
         Util.toColumnString = function (value) {
             return String.fromCharCode(64 + value);
         };
+        Util.isValidRowNumber = function (value) {
+            return value && value > 0 && value <= 1048576;
+        };
+        Util.isValidColumnNumber = function (value) {
+            return value && value > 0 && value <= 16384;
+        };
         return Util;
     }());
     exports.Util = Util;
 });
-define("utility/excel/sheetUtility", ["require", "exports", "xmlElements/xmlFiles/xlsx/sheet", "shared/util"], function (require, exports, sheet_2, util_1) {
+define("utility/excel/cellUtility", ["require", "exports", "xmlElements/base/xmlNode"], function (require, exports, xmlNode_7) {
     "use strict";
-    exports.__esModule = true;
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var Cell = (function () {
+        function Cell(sheet, cellUtility, value, _type, _index, _row, _column, formula) {
+            if (value === void 0) { value = ""; }
+            if (_type === void 0) { _type = "string"; }
+            if (_index === void 0) { _index = "A1"; }
+            if (_row === void 0) { _row = 1; }
+            if (_column === void 0) { _column = "A"; }
+            this.value = value;
+            this._type = _type;
+            this._index = _index;
+            this._row = _row;
+            this._column = _column;
+            this.formula = formula;
+            this.sheet = sheet;
+            this.cellUtility = cellUtility;
+        }
+        Object.defineProperty(Cell.prototype, "type", {
+            get: function () {
+                return this._type;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Cell.prototype, "index", {
+            get: function () {
+                return this._index;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Cell.prototype, "row", {
+            get: function () {
+                return this._row;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Cell.prototype, "column", {
+            get: function () {
+                return this._column;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Cell.prototype.style = function (options) { };
+        Cell.prototype.set = function (value, options) { };
+        Cell.prototype.toJSON = function () {
+            return {
+                value: this.value
+            };
+        };
+        return Cell;
+    }());
+    exports.Cell = Cell;
+    var CellUtility = (function () {
+        function CellUtility(sheet) {
+            this.sheet = sheet;
+        }
+        CellUtility.prototype.getCell = function (rn, index, cs) {
+            var row = this.sheet.getRow(rn);
+            if (!row) {
+                return new Cell(this.sheet, this, undefined, undefined, index, rn, cs);
+            }
+            var cell = row.getCell(index);
+            if (!cell) {
+                return new Cell(this.sheet, this, undefined, undefined, index, rn, cs);
+            }
+            var _a = this.getCellDetails(cell), value = _a.value, type = _a.type;
+            return new Cell(this.sheet, this, value, type, index, rn, cs);
+        };
+        CellUtility.prototype.addCell = function (rn, index, cs, value, type, formula) {
+            if (value === void 0) { value = ""; }
+            if (type === void 0) { type = "string"; }
+            var row = this.sheet.addRow(rn);
+            var cell = row.addCell(index);
+            var v = new xmlNode_7.XmlNode("v");
+            v.value = value;
+            cell.children.length = 0;
+            switch (type) {
+                case "string":
+                    cell.attribute("t").value = "inlineStr";
+                    v.name = "t";
+                    cell.child(new xmlNode_7.XmlNode("is").child(v));
+                    break;
+                case "numeric":
+                    cell.attribute("t").value = "";
+                    cell.child(v);
+                    break;
+                case "sharedString":
+                    cell.attribute("t").value = "s";
+                    cell.child(v);
+                    break;
+                case "formula":
+                    cell.attribute("t").value = "";
+                    var f = new xmlNode_7.XmlNode("f");
+                    f.value = formula;
+                    cell.child(f);
+                    break;
+                case "sharedFormula":
+                    cell.attribute("t").value = "";
+                    break;
+            }
+            return this.getCell(rn, index, cs);
+        };
+        CellUtility.prototype.getCellDetails = function (cell) {
+            var type = cell.attribute("t").value;
+            switch (type) {
+                case "inlineStr":
+                    return {
+                        value: cell.child("is").child("t").value,
+                        type: "string"
+                    };
+                    break;
+                case "":
+                    return {
+                        value: cell.child("v").value,
+                        type: "numeric"
+                    };
+                    break;
+            }
+        };
+        return CellUtility;
+    }());
+    exports.CellUtility = CellUtility;
+});
+define("utility/excel/sheetUtility", ["require", "exports", "xmlElements/xmlFiles/xlsx/sheet", "shared/util", "utility/excel/cellUtility"], function (require, exports, sheet_2, util_1, cellUtility_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var SheetUtility = (function () {
         function SheetUtility(workbook, eventBus, name) {
             this.eventBus = eventBus;
-            this.sheet = new sheet_2.Sheet(workbook.TotalSheet + 1, name);
+            this.sheet = new sheet_2.Sheet(workbook.totalSheet + 1, name);
             this.triggerInitialize();
             this.bindListeners();
             workbook.addSheet(this.sheet);
-            if (this.sheet.Id === 1) {
+            if (this.sheet.id === 1) {
                 this.active();
             }
+            this.cellUtility = new cellUtility_1.CellUtility(this.sheet);
         }
+        Object.defineProperty(SheetUtility.prototype, "isActive", {
+            get: function () {
+                return this._isActive;
+            },
+            set: function (value) {
+                if (value) {
+                    this.active();
+                }
+                else {
+                    throw "Can not have a workbook without any active sheet.";
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
         SheetUtility.prototype.active = function () {
-            this.eventBus.trigger("activateTab", this.sheet.Id - 1);
-            this.IsActive = true;
-            this.sheet.TabSelected.Value = "1";
-            this.sheet.TabSelected.State = true;
+            this.eventBus.trigger("activateTab", this.sheet.id - 1);
+            this._isActive = true;
+            this.sheet.tabSelected.value = "1";
+            this.sheet.tabSelected.state = true;
             return this;
         };
         SheetUtility.prototype.selectCell = function (cell, cellRange) {
             if (cell) {
                 if (util_1.Util.isCellString(cell)) {
-                    if (this.sheet.Selections.length === 1) {
-                        this.sheet.Selections[0].attribute("activeCell").Value = cell;
-                        this.sheet.Selections[0].attribute("sqref").Value = cell;
+                    if (this.sheet.selections.length === 1) {
+                        this.sheet.selections[0].attribute("activeCell").value = cell;
+                        this.sheet.selections[0].attribute("sqref").value = cell;
                     }
                     else {
-                        var topLeft = this.sheet.Pane.attribute("topLeftCell").Value;
+                        var topLeft = this.sheet.pane.attribute("topLeftCell").value;
                         var panelDetails = util_1.Util.getCellColumnRow(topLeft);
                         var cellDetails = util_1.Util.getCellColumnRow(cell);
                         var activePane_1 = "bottomRight";
@@ -690,11 +911,11 @@ define("utility/excel/sheetUtility", ["require", "exports", "xmlElements/xmlFile
                                 activePane_1 = "bottomRight";
                             }
                         }
-                        this.sheet.Selections.forEach(function (selection) {
-                            if (selection.attribute("pane").Value === "bottomRight" ||
-                                selection.attribute("pane").Value === activePane_1) {
-                                selection.attribute("activeCell").Value = cell;
-                                selection.attribute("sqref").Value = cell;
+                        this.sheet.selections.forEach(function (selection) {
+                            if (selection.attribute("pane").value === "bottomRight" ||
+                                selection.attribute("pane").value === activePane_1) {
+                                selection.attribute("activeCell").value = cell;
+                                selection.attribute("sqref").value = cell;
                             }
                         });
                     }
@@ -706,41 +927,41 @@ define("utility/excel/sheetUtility", ["require", "exports", "xmlElements/xmlFile
             if (cellRange) {
                 this.selectCells(cellRange);
             }
-            if (this.sheet.Selections.length === 1) {
-                return this.sheet.Selections[0].attribute("activeCell").Value;
+            if (this.sheet.selections.length === 1) {
+                return this.sheet.selections[0].attribute("activeCell").value;
             }
         };
         SheetUtility.prototype.selectCells = function (cellRange) {
             if (cellRange) {
-                if (this.sheet.Selections.length === 1) {
+                if (this.sheet.selections.length === 1) {
                     if (util_1.Util.isCellRangeString(cellRange)) {
-                        this.sheet.Selections[0].attribute("sqref").Value = cellRange;
+                        this.sheet.selections[0].attribute("sqref").value = cellRange;
                     }
                     else if (util_1.Util.isCellString(cellRange)) {
-                        this.sheet.Selections[0].attribute("sqref").Value = cellRange;
+                        this.sheet.selections[0].attribute("sqref").value = cellRange;
                     }
                     else {
                         throw "Invalid cell range value. The possible values for this are defined by the ST_Sqref.";
                     }
                 }
                 else {
-                    this.sheet.Selections.forEach(function (selection) {
-                        if (selection.attribute("pane").Value === "bottomRight") {
+                    this.sheet.selections.forEach(function (selection) {
+                        if (selection.attribute("pane").value === "bottomRight") {
                             if (util_1.Util.isCellRangeString(cellRange)) {
-                                selection.attribute("sqref").Value = cellRange;
+                                selection.attribute("sqref").value = cellRange;
                             }
                             else if (util_1.Util.isCellString(cellRange)) {
-                                selection.attribute("sqref").Value = cellRange;
+                                selection.attribute("sqref").value = cellRange;
                             }
                         }
                     });
                 }
             }
-            return this.sheet.Selections[0].attribute("sqref").Value;
+            return this.sheet.selections[0].attribute("sqref").value;
         };
         SheetUtility.prototype.freezePane = function (rows, columns) {
             if (!rows && !columns) {
-                this.sheet.Pane.Name = "";
+                this.sheet.pane.name = "";
             }
             else {
                 var topLeftCell = util_1.Util.toColumnString((columns || 0) + 1) + ((rows || 0) + 1);
@@ -749,7 +970,7 @@ define("utility/excel/sheetUtility", ["require", "exports", "xmlElements/xmlFile
                 var numberOfPanes = this.calculateNumberOfPanes(rows, columns);
                 this.sheet.clearSelections();
                 if (numberOfPanes === 0) {
-                    this.sheet.Pane.Name = "";
+                    this.sheet.pane.name = "";
                     this.sheet.addSelection(column + row);
                     return this;
                 }
@@ -764,20 +985,20 @@ define("utility/excel/sheetUtility", ["require", "exports", "xmlElements/xmlFile
                         activePane = "bottomRight";
                     }
                 }
-                this.sheet.Pane.Name = "pane";
-                this.sheet.Pane.attribute("activePane").Value = activePane;
-                this.sheet.Pane.attribute("topLeftCell").Value = topLeftCell;
+                this.sheet.pane.name = "pane";
+                this.sheet.pane.attribute("activePane").value = activePane;
+                this.sheet.pane.attribute("topLeftCell").value = topLeftCell;
                 if (columns && columns > 1) {
-                    this.sheet.Pane.attribute("xSplit").Value = rows.toString();
+                    this.sheet.pane.attribute("xSplit").value = rows.toString();
                 }
                 else {
-                    this.sheet.Pane.attribute("xSplit").State = false;
+                    this.sheet.pane.attribute("xSplit").state = false;
                 }
                 if (rows && rows > 1) {
-                    this.sheet.Pane.attribute("ySplit").Value = columns.toString();
+                    this.sheet.pane.attribute("ySplit").value = columns.toString();
                 }
                 else {
-                    this.sheet.Pane.attribute("ySplit").State = false;
+                    this.sheet.pane.attribute("ySplit").state = false;
                 }
                 if (numberOfPanes === 2) {
                     this.sheet.addSelection(column + row, activePane, null, true);
@@ -806,18 +1027,33 @@ define("utility/excel/sheetUtility", ["require", "exports", "xmlElements/xmlFile
                 throw "Invalid Cell Range string. The possible values for this are defined by the ST_Sqref.";
             }
         };
+        SheetUtility.prototype.cell = function (row, column, options) {
+            if (!util_1.Util.isValidRowNumber(row) || !util_1.Util.isValidColumnNumber(column)) {
+                throw "Row and Column should be valid.";
+            }
+            if (typeof options === "number") {
+                options = { value: options.toString(10) };
+            }
+            else if (typeof options === "string" && options) {
+                options = { value: options };
+            }
+            if (!options || options !== "" || options !== 0) {
+                var cs = util_1.Util.toColumnString(column);
+                return this.cellUtility.getCell(row, cs + row.toString(10), cs);
+            }
+        };
         SheetUtility.prototype.triggerInitialize = function () {
             this.eventBus.trigger("addFile", this.sheet);
-            this.eventBus.trigger("addContentType", "Override", "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml", "/" + this.sheet.FilePath + "/" + this.sheet.FileName);
-            this.eventBus.trigger("addWorkbookRelation", "sheets/" + this.sheet.FileName, "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet", this.sheet.Id);
+            this.eventBus.trigger("addContentType", "Override", "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml", "/" + this.sheet.filePath + "/" + this.sheet.fileName);
+            this.eventBus.trigger("addWorkbookRelation", "sheets/" + this.sheet.fileName, "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet", this.sheet.id);
         };
         SheetUtility.prototype.bindListeners = function () {
             var _this = this;
             this.eventBus.startListening("activateTab", function (tabNumber) {
-                if (tabNumber != _this.sheet.Id - 1) {
-                    _this.IsActive = false;
-                    _this.sheet.TabSelected.Value = "";
-                    _this.sheet.TabSelected.State = false;
+                if (tabNumber != _this.sheet.id - 1) {
+                    _this._isActive = false;
+                    _this.sheet.tabSelected.value = "";
+                    _this.sheet.tabSelected.state = false;
                 }
             });
         };
@@ -837,7 +1073,7 @@ define("utility/excel/sheetUtility", ["require", "exports", "xmlElements/xmlFile
 });
 define("utility/excel/workbookUtility", ["require", "exports", "xmlElements/xmlFiles/xlsx/workbook", "xmlElements/xmlFiles/relationships", "utility/excel/sheetUtility"], function (require, exports, workbook_1, relationships_1, sheetUtility_1) {
     "use strict";
-    exports.__esModule = true;
+    Object.defineProperty(exports, "__esModule", { value: true });
     var WorkbookUtility = (function () {
         function WorkbookUtility(eventBus) {
             this.eventBus = eventBus;
@@ -857,7 +1093,7 @@ define("utility/excel/workbookUtility", ["require", "exports", "xmlElements/xmlF
                 _this.relations.addRelationship(target, type, id);
             });
             this.eventBus.startListening("activateTab", function (tabNumber) {
-                _this.workbook.ActiveTab.Value = tabNumber.toString(10);
+                _this.workbook.activeTab.value = tabNumber.toString(10);
             });
         };
         return WorkbookUtility;
@@ -866,20 +1102,20 @@ define("utility/excel/workbookUtility", ["require", "exports", "xmlElements/xmlF
 });
 define("utility/excel/xlsx", ["require", "exports", "xmlElements/xmlFiles/contentTypes", "xmlElements/xmlFiles/relationships", "shared/fileHandler", "shared/eventBus", "utility/excel/workbookUtility"], function (require, exports, contentTypes_1, relationships_2, fileHandler_1, eventBus_1, workbookUtility_1) {
     "use strict";
-    exports.__esModule = true;
+    Object.defineProperty(exports, "__esModule", { value: true });
     var Xlsx = (function () {
         function Xlsx(fileName) {
             this.files = [];
             this.initContentTypes();
             this.initRels();
-            this.FileName = (fileName && fileName.trim()) || "Document.xlsx";
+            this.fileName = (fileName && fileName.trim()) || "Document.xlsx";
             this.fileHandler = new fileHandler_1.FileHandler();
             this.eventBus = new eventBus_1.EventBus();
             this.bindListeners();
             this.workbookUtility = new workbookUtility_1.WorkbookUtility(this.eventBus);
         }
         Xlsx.prototype.download = function (fileName, callback) {
-            fileName = (fileName && fileName.trim()) || this.FileName;
+            fileName = (fileName && fileName.trim()) || this.fileName;
             if (fileName) {
                 if (!fileName.endsWith(".xlsx")) {
                     fileName += ".xlsx";
@@ -922,8 +1158,8 @@ define("utility/excel/xlsx", ["require", "exports", "xmlElements/xmlFiles/conten
 });
 define("utility/joi.browser", ["require", "exports", "utility/excel/xlsx"], function (require, exports, xlsx_1) {
     "use strict";
-    exports.__esModule = true;
+    Object.defineProperty(exports, "__esModule", { value: true });
     exports.joi = {
-        Xlsx: xlsx_1.Xlsx
+        xlsx: xlsx_1.Xlsx
     };
 });
