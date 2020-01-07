@@ -1506,6 +1506,30 @@ define("entities/xlsx/files/workbookFile", ["require", "exports", "entities/base
                 });
                 sheetNode.attribute(new attribute_7.Attribute("id", rId, true, _this.rootNode.namespaces["http://schemas.openxmlformats.org/officeDocument/2006/relationships"]));
             });
+            eventBus.startListening("setSheetWorkbookView", function (sheetId, index) {
+                var workbookView = index ? _this.workbookViews.find(function (wv) { return wv.index === index; }) : undefined;
+                if (!workbookView) {
+                    workbookView = _this.workbookViews.find(function (wv) {
+                        return wv.sheets.find(function (s) { return s === sheetId; });
+                    });
+                    if (!workbookView) {
+                        var workbookView_1 = new node_6.Node("workbookView", [], true, _this.defaultNamespace);
+                        _this.workbookViews.push({
+                            sheets: [sheetId],
+                            node: workbookView_1,
+                            index: _this.workbookViews.length
+                        });
+                    }
+                }
+                else {
+                    if (!workbookView.sheets) {
+                        workbookView.sheets = [];
+                    }
+                    if (!workbookView.sheets.find(function (s) { return s === sheetId; })) {
+                        workbookView.sheets.push(sheetId);
+                    }
+                }
+            });
         };
         /**
          * Initilize workbook view
