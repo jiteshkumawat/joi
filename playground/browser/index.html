@@ -1,0 +1,36 @@
+<html>
+  <head>
+    <script src="../../node_modules/jszip/dist/jszip.min.js"></script>
+    <script src="../../dist/joi.browser.js"></script>
+  </head>
+  <body>
+    running...
+    <hr/>
+    <input type="file" id="file"/>
+    <script>
+      function loadFile(evt){
+        var file = evt.target.files[0];
+        joi.xlsx.load(file, function(newxl){
+          console.log(newxl);
+        });
+      }
+    document.getElementById('file').addEventListener('change', loadFile, false);
+    // var fl = joi.xlsx();
+    // console.log(fl);
+
+    var workbook = new joi.xlsx("workbook.xlsx");
+    console.log(workbook);
+    console.log(JSON.stringify(workbook));
+
+    var sheet = workbook.sheet("Sheet1");
+    workbook.sheet("Sheet2");
+    
+    console.log(sheet);
+    console.log(JSON.stringify(sheet));
+
+    sheet.name = "Sheet3";
+    workbook.download();
+
+    </script>
+  </body>
+</html>

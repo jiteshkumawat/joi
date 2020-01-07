@@ -3,12 +3,12 @@
     "module": "AMD",
     "moduleResolution": "Classic",
     "noImplicitAny": true,
-    "removeComments": true,
+    "removeComments": false,
     "preserveConstEnums": true,
     "outFile": "dist/joi.browser.amd.js",
     "sourceMap": false,
     "target": "es5"
   },
-  "include": ["xmlElements/**/*", "utility/**/*"],
-  "exclude": ["**/*.spec.ts", "./utility/joi.ts"]
+  "include": ["entities/**/*", "util/**/*", "app/**/*"],
+  "exclude": ["./app/joi.ts"]
 }

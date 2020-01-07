@@ -1,11 +1,11 @@
 {
   "name": "joi",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Javascript Open XML Implementation",
   "main": "index.js",
   "scripts": {
-    "test": "mocha -r ts-node/register **/spec/*.spec.ts",
-    "testWithCoverage": "nyc -r lcov -e .ts -x \"**/spec/*.spec.ts\" mocha -r ts-node/register **/spec/*.spec.ts && nyc report",
+    "test": "mocha -r ts-node/register spec/**/*.spec.ts",
+    "testWithCoverage": "nyc -r lcov -e .ts -x \"spec/**/*.spec.ts\" mocha -r ts-node/register spec/**/*.spec.ts && nyc report",
     "build": "tsc && tsc -p tsconfig.browser.amd.json && call build/build.browser.bat"
   },
   "keywords": [
@@ -13,12 +13,15 @@
     "xml",
     "documents",
     "javascript",
-    "library"
+    "library",
+    "open xml.js",
+    "excel js"
   ],
   "author": "Jitesh Kumawat",
   "license": "MIT",
   "dependencies": {
-    "jszip": "^3.2.0"
+    "jszip": "^3.2.0",
+    "xml2js": "^0.4.22"
   },
   "devDependencies": {
     "@types/chai": "^4.1.7",
@@ -27,7 +30,6 @@
     "@types/sinon": "^7.0.11",
     "chai": "^4.2.0",
     "mocha": "^6.0.0",
-    "nyc": "^13.3.0",
     "sinon": "^7.3.1",
     "ts-node": "^8.0.2",
     "typescript": "^3.3.3"

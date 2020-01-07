@@ -11,6 +11,6 @@
     "target": "es5",
     "preserveSymlinks": true
   },
-  "include": ["xmlElements/**/*", "utility/**/*"],
-  "exclude": ["**/*.spec.ts", "./utility/joi.browser.ts"]
+  "include": ["entities/**/*", "util/**/*", "app/**/*"],
+  "exclude": ["./app/joi.browser.ts"]
 }
