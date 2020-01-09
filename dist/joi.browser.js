@@ -417,7 +417,7 @@ define("entities/base/fileBase", ["require", "exports", "entities/base/xml", "en
          * @returns {number} - Possible index of child node to add
          */
         FileBase.prototype.getRootChildIndex = function (node) {
-            if (node === this.FirstChildNode) {
+            if (node === this.RootChildNodes[0]) {
                 return 0;
             }
             var i = this.RootChildNodes.indexOf(node);
@@ -1251,7 +1251,7 @@ define("entities/xlsx/files/sharedStringsFile", ["require", "exports", "entities
     }(xml_4.Xml));
     exports.SharedStringsFile = SharedStringsFile;
 });
-define("entities/xlsx/files/sheetFile", ["require", "exports", "entities/base/xml", "util/parser", "entities/base/node", "entities/base/attribute"], function (require, exports, xml_5, parser_4, node_6, attribute_6) {
+define("entities/xlsx/files/sheetFile", ["require", "exports", "entities/base/fileBase", "util/parser", "entities/base/node", "entities/base/attribute"], function (require, exports, fileBase_1, parser_4, node_6, attribute_6) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var SheetFile = /** @class */ (function (_super) {
@@ -1268,8 +1268,49 @@ define("entities/xlsx/files/sheetFile", ["require", "exports", "entities/base/xm
                 _this.name = name;
                 // this.rId = rId;
                 _this.id = id;
-                _this.sheetData = _this.rootNode.child(new node_6.Node("sheetData", [], true, _this.defaultNamespace));
+                _this.sheetData = _this.addRootChild("sheetData", _this.defaultNamespace).node;
             }
+            _this.RootChildNodes = [
+                "sheetPr",
+                "dimension",
+                "sheetViews",
+                "sheetFormatPr",
+                "cols",
+                "sheetData",
+                "sheetCalcPr",
+                "sheetProtection",
+                "protectedRanges",
+                "scenarios",
+                "autoFilter",
+                "sortState",
+                "dataConsolidate",
+                "customSheetViews",
+                "mergeCells",
+                "phoneticPr",
+                "conditionalFormatting",
+                "dataValidations",
+                "hyperlinks",
+                "printOptions",
+                "pageMargins",
+                "pageSetup",
+                "headerFooter",
+                "rowBreaks",
+                "colBreaks",
+                "customProperties",
+                "cellWatches",
+                "ignoredErrors",
+                "smartTags",
+                "drawing",
+                "legacyDrawing",
+                "legacyDrawingHF",
+                "drawingHF",
+                "picture",
+                "oleObjects",
+                "controls",
+                "webPublishItems",
+                "tableParts",
+                "extLst"
+            ];
             return _this;
         }
         Object.defineProperty(SheetFile.prototype, "showFormula", {
@@ -1400,16 +1441,8 @@ define("entities/xlsx/files/sheetFile", ["require", "exports", "entities/base/xm
             });
         };
         SheetFile.prototype.createSheetViews = function () {
-            var index = 0;
             if (!this.sheetViews) {
-                if (this.rootNode.child("sheetPr", this.defaultNamespace)) {
-                    index++;
-                }
-                if (this.rootNode.child("dimension", this.defaultNamespace)) {
-                    index++;
-                }
-                this.sheetViews = new node_6.Node("sheetViews", [], true, this.defaultNamespace);
-                this.rootNode.children.splice(index, 0, this.sheetViews);
+                this.sheetViews = this.addRootChild("sheetViews", this.defaultNamespace).node;
             }
         };
         SheetFile.prototype.createSheetView = function () {
@@ -1438,10 +1471,10 @@ define("entities/xlsx/files/sheetFile", ["require", "exports", "entities/base/xm
             }
         };
         return SheetFile;
-    }(xml_5.Xml));
+    }(fileBase_1.FileBase));
     exports.SheetFile = SheetFile;
 });
-define("entities/xlsx/files/workbookFile", ["require", "exports", "entities/base/node", "entities/xlsx/files/sheetFile", "entities/base/attribute", "util/parser", "entities/base/fileBase"], function (require, exports, node_7, sheetFile_1, attribute_7, parser_5, fileBase_1) {
+define("entities/xlsx/files/workbookFile", ["require", "exports", "entities/base/node", "entities/xlsx/files/sheetFile", "entities/base/attribute", "util/parser", "entities/base/fileBase"], function (require, exports, node_7, sheetFile_1, attribute_7, parser_5, fileBase_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -1486,7 +1519,6 @@ define("entities/xlsx/files/workbookFile", ["require", "exports", "entities/base
                 "workbookPr",
                 "workbookProtection"
             ];
-            _this.FirstChildNode = "bookViews";
             return _this;
         }
         // /**
@@ -1641,7 +1673,7 @@ define("entities/xlsx/files/workbookFile", ["require", "exports", "entities/base
             ], true, this.defaultNamespace));
         };
         return WorkbookFile;
-    }(fileBase_1.FileBase));
+    }(fileBase_2.FileBase));
     exports.WorkbookFile = WorkbookFile;
 });
 define("util/util", ["require", "exports"], function (require, exports) {

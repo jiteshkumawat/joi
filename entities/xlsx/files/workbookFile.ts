@@ -66,8 +66,6 @@ export class WorkbookFile extends FileBase {
       "workbookPr",
       "workbookProtection"
     ];
-
-    this.FirstChildNode = "bookViews";
   }
 
   /**

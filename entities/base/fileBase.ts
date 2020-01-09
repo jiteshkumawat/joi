@@ -3,11 +3,6 @@ import { Node } from "./node";
 
 export class FileBase extends Xml {
   /**
-   * Name of first possible child of Root Node
-   */
-  protected FirstChildNode: string;
-
-  /**
    * Sequential Array of names of child of Root Node
    */
   protected RootChildNodes: string[] = [];
@@ -32,7 +27,7 @@ export class FileBase extends Xml {
    * @returns {number} - Possible index of child node to add
    */
   protected getRootChildIndex(node: string): number {
-    if (node === this.FirstChildNode) {
+    if (node === this.RootChildNodes[0]) {
       return 0;
     }
     let i = this.RootChildNodes.indexOf(node);

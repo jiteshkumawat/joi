@@ -49,7 +49,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var xml_1 = require("../../base/xml");
+var fileBase_1 = require("../../base/fileBase");
 var parser_1 = require("../../../util/parser");
 var node_1 = require("../../base/node");
 var attribute_1 = require("../../base/attribute");
@@ -67,8 +67,49 @@ var SheetFile = /** @class */ (function (_super) {
             _this.name = name;
             // this.rId = rId;
             _this.id = id;
-            _this.sheetData = _this.rootNode.child(new node_1.Node("sheetData", [], true, _this.defaultNamespace));
+            _this.sheetData = _this.addRootChild("sheetData", _this.defaultNamespace).node;
         }
+        _this.RootChildNodes = [
+            "sheetPr",
+            "dimension",
+            "sheetViews",
+            "sheetFormatPr",
+            "cols",
+            "sheetData",
+            "sheetCalcPr",
+            "sheetProtection",
+            "protectedRanges",
+            "scenarios",
+            "autoFilter",
+            "sortState",
+            "dataConsolidate",
+            "customSheetViews",
+            "mergeCells",
+            "phoneticPr",
+            "conditionalFormatting",
+            "dataValidations",
+            "hyperlinks",
+            "printOptions",
+            "pageMargins",
+            "pageSetup",
+            "headerFooter",
+            "rowBreaks",
+            "colBreaks",
+            "customProperties",
+            "cellWatches",
+            "ignoredErrors",
+            "smartTags",
+            "drawing",
+            "legacyDrawing",
+            "legacyDrawingHF",
+            "drawingHF",
+            "picture",
+            "oleObjects",
+            "controls",
+            "webPublishItems",
+            "tableParts",
+            "extLst"
+        ];
         return _this;
     }
     Object.defineProperty(SheetFile.prototype, "showFormula", {
@@ -199,16 +240,8 @@ var SheetFile = /** @class */ (function (_super) {
         });
     };
     SheetFile.prototype.createSheetViews = function () {
-        var index = 0;
         if (!this.sheetViews) {
-            if (this.rootNode.child("sheetPr", this.defaultNamespace)) {
-                index++;
-            }
-            if (this.rootNode.child("dimension", this.defaultNamespace)) {
-                index++;
-            }
-            this.sheetViews = new node_1.Node("sheetViews", [], true, this.defaultNamespace);
-            this.rootNode.children.splice(index, 0, this.sheetViews);
+            this.sheetViews = this.addRootChild("sheetViews", this.defaultNamespace).node;
         }
     };
     SheetFile.prototype.createSheetView = function () {
@@ -237,6 +270,6 @@ var SheetFile = /** @class */ (function (_super) {
         }
     };
     return SheetFile;
-}(xml_1.Xml));
+}(fileBase_1.FileBase));
 exports.SheetFile = SheetFile;
 //# sourceMappingURL=sheetFile.js.map

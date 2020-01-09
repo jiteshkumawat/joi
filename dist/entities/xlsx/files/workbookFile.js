@@ -96,7 +96,6 @@ var WorkbookFile = /** @class */ (function (_super) {
             "workbookPr",
             "workbookProtection"
         ];
-        _this.FirstChildNode = "bookViews";
         return _this;
     }
     // /**

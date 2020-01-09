@@ -1,9 +1,9 @@
-import { Xml } from "../../base/xml";
+import { FileBase } from "../../base/fileBase";
 import { XmlParser } from "../../../util/parser";
 import { Node } from "../../base/node";
 import { Attribute } from "../../base/attribute";
 
-export class SheetFile extends Xml {
+export class SheetFile extends FileBase {
   /**
    * Initialize new Sheet file
    * @param id - Sheet Id. Reffered in workbook file.
@@ -27,10 +27,50 @@ export class SheetFile extends Xml {
       // this.rId = rId;
       this.id = id;
 
-      this.sheetData = this.rootNode.child(
-        new Node("sheetData", [], true, this.defaultNamespace)
-      );
+      this.sheetData = this.addRootChild("sheetData", this.defaultNamespace).node;
     }
+
+    this.RootChildNodes = [
+      "sheetPr",
+      "dimension",
+      "sheetViews",
+      "sheetFormatPr",
+      "cols",
+      "sheetData",
+      "sheetCalcPr",
+      "sheetProtection",
+      "protectedRanges",
+      "scenarios",
+      "autoFilter",
+      "sortState",
+      "dataConsolidate",
+      "customSheetViews",
+      "mergeCells",
+      "phoneticPr",
+      "conditionalFormatting",
+      "dataValidations",
+      "hyperlinks",
+      "printOptions",
+      "pageMargins",
+      "pageSetup",
+      "headerFooter",
+      "rowBreaks",
+      "colBreaks",
+      "customProperties",
+      "cellWatches",
+      "ignoredErrors",
+      "smartTags",
+      "drawing",
+      "legacyDrawing",
+      "legacyDrawingHF",
+      "drawingHF",
+      "picture",
+      "oleObjects",
+      "controls",
+      "webPublishItems",
+      "tableParts",
+      "extLst"
+    ];
   }
 
   /**
@@ -176,22 +216,8 @@ export class SheetFile extends Xml {
   private sheetData: Node;
 
   private createSheetViews() {
-    let index = 0;
     if (!this.sheetViews) {
-      if (this.rootNode.child("sheetPr", this.defaultNamespace)) {
-        index++;
-      }
-
-      if (this.rootNode.child("dimension", this.defaultNamespace)) {
-        index++;
-      }
-      this.sheetViews = new Node(
-        "sheetViews",
-        [],
-        true,
-        this.defaultNamespace
-      );
-      this.rootNode.children.splice(index, 0, this.sheetViews);
+      this.sheetViews = this.addRootChild("sheetViews", this.defaultNamespace).node;
     }
   }
 
