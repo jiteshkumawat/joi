@@ -28,7 +28,12 @@ export class SheetBuilder {
         eventBus.trigger("setSheetRelationId", sheetFile.id, rId);
       }
     );
-    return new Sheet(sheetFile, eventBus, workbookFile);
+
+    const sheet = new Sheet(sheetFile, eventBus, workbookFile)
+
+    eventBus.trigger("setSheetWorkbookView", sheetFile.id);
+
+    return sheet;
   }
 
   public static async create(

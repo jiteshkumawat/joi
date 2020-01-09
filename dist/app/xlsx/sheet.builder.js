@@ -48,7 +48,9 @@ var SheetBuilder = /** @class */ (function () {
         eventBus.trigger("addWorkbookRelation", relPath, "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet", function (rId) {
             eventBus.trigger("setSheetRelationId", sheetFile.id, rId);
         });
-        return new sheet_1.Sheet(sheetFile, eventBus, workbookFile);
+        var sheet = new sheet_1.Sheet(sheetFile, eventBus, workbookFile);
+        eventBus.trigger("setSheetWorkbookView", sheetFile.id);
+        return sheet;
     };
     SheetBuilder.create = function (content, eventBus, workbookFile, fileName, filePath, id, name) {
         return __awaiter(this, void 0, void 0, function () {

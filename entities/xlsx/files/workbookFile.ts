@@ -1,14 +1,14 @@
-import { Xml } from "../../base/xml";
 import { Node } from "../../base/node";
 import { SheetFile } from "./sheetFile";
 import { Attribute } from "../../base/attribute";
 import { XmlParser } from "../../../util/parser";
 import { EventBus } from "../../../util/eventBus";
+import { FileBase } from "../../base/fileBase";
 
 /**
  * Define new workbook file
  */
-export class WorkbookFile extends Xml {
+export class WorkbookFile extends FileBase {
   /**
    * Initialize new workbook file
    * @param fileName - The file name
@@ -40,10 +40,34 @@ export class WorkbookFile extends Xml {
       );
 
       this.workbookViews = [];
-      this.sheets = this.addWorkbookChild("sheets", this.defaultNamespace).node;
+      this.sheets = this.addRootChild("sheets", this.defaultNamespace).node;
       this.initializeView();
       this.bindListeners(eventBus);
     }
+
+    this.RootChildNodes = [
+      "bookViews",
+      "calcPr",
+      "customWorkbookViews",
+      "definedNames",
+      "externalReferences",
+      "extLst",
+      "fileRecoveryPr",
+      "fileSharing",
+      "fileVersion",
+      "functionGroups",
+      "oleSize",
+      "pivotCaches",
+      "sheets",
+      "smartTagPr",
+      "smartTagTypes",
+      "webPublishing",
+      "webPublishObjects",
+      "workbookPr",
+      "workbookProtection"
+    ];
+
+    this.FirstChildNode = "bookViews";
   }
 
   /**
@@ -199,7 +223,9 @@ export class WorkbookFile extends Xml {
     eventBus.startListening(
       "setSheetWorkbookView",
       (sheetId: Number, index?: Number) => {
-        let workbookView = index ? this.workbookViews.find(wv => wv.index === index): undefined;
+        let workbookView = index
+          ? this.workbookViews.find(wv => wv.index === index)
+          : undefined;
         if (!workbookView) {
           workbookView = this.workbookViews.find(wv =>
             wv.sheets.find(s => s === sheetId)
@@ -233,10 +259,7 @@ export class WorkbookFile extends Xml {
    * Initilize workbook view
    */
   private initializeView() {
-    this.bookViews = this.addWorkbookChild(
-      "bookViews",
-      this.defaultNamespace
-    ).node;
+    this.bookViews = this.addRootChild("bookViews", this.defaultNamespace).node;
 
     let activeTab = new Attribute(
       "activeTab",
@@ -279,70 +302,6 @@ export class WorkbookFile extends Xml {
       )
     );
   }
-
-  private addWorkbookChild(
-    childName: string,
-    namespace?: string
-  ): { new: Boolean; node: Node } {
-    let savedChild = this.rootNode.child(
-      childName,
-      namespace || this.defaultNamespace
-    );
-
-    if (!savedChild) {
-      let index = this.getWorkbookChildIndex(childName);
-      savedChild = new Node(
-        childName,
-        [],
-        true,
-        namespace || this.defaultNamespace
-      );
-      this.rootNode.children.splice(index, 0, savedChild);
-      return { new: true, node: savedChild };
-    }
-
-    return { new: false, node: savedChild };
-  }
-
-  private getWorkbookChildIndex(node: string): number {
-    if (node === "bookViews") {
-      return 0;
-    }
-    let i = WorkbookFile.WorkbookChild.indexOf(node);
-
-    while (i > 0) {
-      i--;
-      let n = WorkbookFile.WorkbookChild[i];
-      if (this.rootNode.child(n)) {
-        i++;
-        break;
-      }
-    }
-
-    return i;
-  }
-
-  private static WorkbookChild: string[] = [
-    "bookViews",
-    "calcPr",
-    "customWorkbookViews",
-    "definedNames",
-    "externalReferences",
-    "extLst",
-    "fileRecoveryPr",
-    "fileSharing",
-    "fileVersion",
-    "functionGroups",
-    "oleSize",
-    "pivotCaches",
-    "sheets",
-    "smartTagPr",
-    "smartTagTypes",
-    "webPublishing",
-    "webPublishObjects",
-    "workbookPr",
-    "workbookProtection"
-  ];
 
   // Pending
   // 1. Defined Names

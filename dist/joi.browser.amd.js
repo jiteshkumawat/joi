@@ -376,7 +376,72 @@ define("entities/base/xml", ["require", "exports", "entities/base/documentationN
     }());
     exports.Xml = Xml;
 });
-define("util/parser", ["require", "exports", "entities/base/attribute", "entities/base/node"], function (require, exports, attribute_2, node_1) {
+define("entities/base/fileBase", ["require", "exports", "entities/base/xml", "entities/base/node"], function (require, exports, xml_1, node_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var FileBase = /** @class */ (function (_super) {
+        __extends(FileBase, _super);
+        /**
+         * Creates new instance of xml file
+         * @param {Node} rootNode - The root node of xml
+         * @param {string} fileName - The file name of xml
+         * @param {string} filePath - The file path of xml
+         */
+        function FileBase(rootNode, fileName, filePath) {
+            if (rootNode === void 0) { rootNode = null; }
+            if (fileName === void 0) { fileName = ""; }
+            if (filePath === void 0) { filePath = ""; }
+            var _this = _super.call(this, rootNode, fileName, filePath) || this;
+            _this.rootNode = rootNode;
+            _this.fileName = fileName;
+            _this.filePath = filePath;
+            /**
+             * Sequential Array of names of child of Root Node
+             */
+            _this.RootChildNodes = [];
+            return _this;
+        }
+        /**
+         * Get Index of child node of Root Node
+         * @param node - Child node name to get
+         * @returns {number} - Possible index of child node to add
+         */
+        FileBase.prototype.getRootChildIndex = function (node) {
+            if (node === this.FirstChildNode) {
+                return 0;
+            }
+            var i = this.RootChildNodes.indexOf(node);
+            while (i > 0) {
+                i--;
+                var n = this.RootChildNodes[i];
+                if (this.rootNode.child(n)) {
+                    i++;
+                    break;
+                }
+            }
+            return i;
+        };
+        /**
+         * Add child node to root node
+         * @param childName - Child node name to add
+         * @param namespace - Namespace of node
+         * @returns {{new: boolean, node: Node}} - Details of inserted node
+         */
+        FileBase.prototype.addRootChild = function (childName, namespace) {
+            var savedChild = this.rootNode.child(childName, namespace || this.defaultNamespace);
+            if (!savedChild) {
+                var index = this.getRootChildIndex(childName);
+                savedChild = new node_1.Node(childName, [], true, namespace || this.defaultNamespace);
+                this.rootNode.children.splice(index, 0, savedChild);
+                return { new: true, node: savedChild };
+            }
+            return { new: false, node: savedChild };
+        };
+        return FileBase;
+    }(xml_1.Xml));
+    exports.FileBase = FileBase;
+});
+define("util/parser", ["require", "exports", "entities/base/attribute", "entities/base/node"], function (require, exports, attribute_2, node_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -416,7 +481,7 @@ define("util/parser", ["require", "exports", "entities/base/attribute", "entitie
                 nodeName = nodeNameParams[1];
                 nodeNamespace = nodeNameParams[0];
             }
-            xmlNode = new node_1.Node(nodeName, [], true, nodeNamespace);
+            xmlNode = new node_2.Node(nodeName, [], true, nodeNamespace);
             this.addNameSpaceForBrowser(node, xmlNode);
             for (var i = 0; i < node.attributes.length; i++) {
                 var attr = node.attributes[i], attrName = attr.name, attrNamespace = "";
@@ -471,7 +536,7 @@ define("util/parser", ["require", "exports", "entities/base/attribute", "entitie
                 _nodeName = nodeNameParams[1];
                 nodeNamespace = nodeNameParams[0];
             }
-            xmlNode = new node_1.Node(_nodeName, [], true, nodeNamespace);
+            xmlNode = new node_2.Node(_nodeName, [], true, nodeNamespace);
             this.addNameSpaceForNodeJS(nodeName, node, xmlNode);
             if (node[nodeName] && node[nodeName].$) {
                 for (var attr in node[nodeName].$) {
@@ -518,7 +583,7 @@ define("util/parser", ["require", "exports", "entities/base/attribute", "entitie
     }());
     exports.XmlParser = XmlParser;
 });
-define("entities/files/relationships", ["require", "exports", "entities/base/xml", "entities/base/attribute", "entities/base/node", "util/parser"], function (require, exports, xml_1, attribute_3, node_2, parser_1) {
+define("entities/files/relationships", ["require", "exports", "entities/base/xml", "entities/base/attribute", "entities/base/node", "util/parser"], function (require, exports, xml_2, attribute_3, node_3, parser_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -532,7 +597,7 @@ define("entities/files/relationships", ["require", "exports", "entities/base/xml
          * @param {string} filePath - The file path
          */
         function Relationships(fileName, filePath) {
-            var _this = _super.call(this, new node_2.Node("Relationships", [], true, "", "http://schemas.openxmlformats.org/package/2006/relationships"), fileName || ".rels", filePath || "_rels") || this;
+            var _this = _super.call(this, new node_3.Node("Relationships", [], true, "", "http://schemas.openxmlformats.org/package/2006/relationships"), fileName || ".rels", filePath || "_rels") || this;
             _this.id = 1;
             return _this;
         }
@@ -553,7 +618,7 @@ define("entities/files/relationships", ["require", "exports", "entities/base/xml
             else {
                 this.id = id + 1;
             }
-            var node = new node_2.Node("Relationship", [
+            var node = new node_3.Node("Relationship", [
                 new attribute_3.Attribute("Id", "rId" + id.toString(10), true, this.defaultNamespace),
                 new attribute_3.Attribute("Type", type, true, this.defaultNamespace),
                 new attribute_3.Attribute("Target", target, true, this.defaultNamespace)
@@ -622,7 +687,7 @@ define("entities/files/relationships", ["require", "exports", "entities/base/xml
             });
         };
         return Relationships;
-    }(xml_1.Xml));
+    }(xml_2.Xml));
     exports.Relationships = Relationships;
 });
 define("util/fileHandler", ["require", "exports"], function (require, exports) {
@@ -946,7 +1011,7 @@ define("util/eventBus", ["require", "exports"], function (require, exports) {
     }());
     exports.EventBus = EventBus;
 });
-define("entities/files/contentTypes", ["require", "exports", "entities/base/xml", "entities/base/node", "entities/base/attribute", "util/parser"], function (require, exports, xml_2, node_3, attribute_4, parser_2) {
+define("entities/files/contentTypes", ["require", "exports", "entities/base/xml", "entities/base/node", "entities/base/attribute", "util/parser"], function (require, exports, xml_3, node_4, attribute_4, parser_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -960,7 +1025,7 @@ define("entities/files/contentTypes", ["require", "exports", "entities/base/xml"
         function ContentTypes(eventBus, fileName) {
             var _this = this;
             if (!fileName) {
-                _this = _super.call(this, new node_3.Node("Types", [], true, "", "http://schemas.openxmlformats.org/package/2006/content-types"), "[Content_Types].xml") || this;
+                _this = _super.call(this, new node_4.Node("Types", [], true, "", "http://schemas.openxmlformats.org/package/2006/content-types"), "[Content_Types].xml") || this;
             }
             _this.defaults = {};
             _this.overrides = {};
@@ -974,7 +1039,7 @@ define("entities/files/contentTypes", ["require", "exports", "entities/base/xml"
          * @returns {Node} - The default node
          */
         ContentTypes.prototype.addDefault = function (contentType, extension) {
-            var defaultNode = new node_3.Node("Default", [
+            var defaultNode = new node_4.Node("Default", [
                 new attribute_4.Attribute("ContentType", contentType, true, this.defaultNamespace),
                 new attribute_4.Attribute("Extension", extension, true, this.defaultNamespace)
             ], true, this.defaultNamespace);
@@ -989,7 +1054,7 @@ define("entities/files/contentTypes", ["require", "exports", "entities/base/xml"
          * @returns {Node} - The override node
          */
         ContentTypes.prototype.addOverride = function (contentType, partName) {
-            var overrideNode = new node_3.Node("Override", [
+            var overrideNode = new node_4.Node("Override", [
                 new attribute_4.Attribute("ContentType", contentType, true, this.defaultNamespace),
                 new attribute_4.Attribute("PartName", partName, true, this.defaultNamespace)
             ], true, this.defaultNamespace);
@@ -1050,10 +1115,10 @@ define("entities/files/contentTypes", ["require", "exports", "entities/base/xml"
             });
         };
         return ContentTypes;
-    }(xml_2.Xml));
+    }(xml_3.Xml));
     exports.ContentTypes = ContentTypes;
 });
-define("entities/xlsx/files/sharedStringsFile", ["require", "exports", "entities/base/xml", "entities/base/node", "util/parser", "entities/base/attribute"], function (require, exports, xml_3, node_4, parser_3, attribute_5) {
+define("entities/xlsx/files/sharedStringsFile", ["require", "exports", "entities/base/xml", "entities/base/node", "util/parser", "entities/base/attribute"], function (require, exports, xml_4, node_5, parser_3, attribute_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -1065,7 +1130,7 @@ define("entities/xlsx/files/sharedStringsFile", ["require", "exports", "entities
          * Initialize new workbook file
          */
         function SharedStringsFile() {
-            var _this = _super.call(this, new node_4.Node("sst", [], true, "", "http://schemas.openxmlformats.org/spreadsheetml/2006/main"), "sharedstrings.xml", "workbook") || this;
+            var _this = _super.call(this, new node_5.Node("sst", [], true, "", "http://schemas.openxmlformats.org/spreadsheetml/2006/main"), "sharedstrings.xml", "workbook") || this;
             // this.rootNode.addNamespace(
             //   "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
             //   "r"
@@ -1087,8 +1152,8 @@ define("entities/xlsx/files/sharedStringsFile", ["require", "exports", "entities
                 var uniqueCount = parseInt(this.uniqueCountAttribute.value);
                 this.uniqueCountAttribute.value = (++uniqueCount).toString(10);
             }
-            var si = new node_4.Node("si", [], true, this.defaultNamespace);
-            var t = new node_4.Node("t", [], true, this.defaultNamespace);
+            var si = new node_5.Node("si", [], true, this.defaultNamespace);
+            var t = new node_5.Node("t", [], true, this.defaultNamespace);
             t.value = value;
             si.child(t);
             this.rootNode.child(si);
@@ -1173,10 +1238,10 @@ define("entities/xlsx/files/sharedStringsFile", ["require", "exports", "entities
             }
         };
         return SharedStringsFile;
-    }(xml_3.Xml));
+    }(xml_4.Xml));
     exports.SharedStringsFile = SharedStringsFile;
 });
-define("entities/xlsx/files/sheetFile", ["require", "exports", "entities/base/xml", "util/parser", "entities/base/node", "entities/base/attribute"], function (require, exports, xml_4, parser_4, node_5, attribute_6) {
+define("entities/xlsx/files/sheetFile", ["require", "exports", "entities/base/xml", "util/parser", "entities/base/node", "entities/base/attribute"], function (require, exports, xml_5, parser_4, node_6, attribute_6) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var SheetFile = /** @class */ (function (_super) {
@@ -1189,11 +1254,11 @@ define("entities/xlsx/files/sheetFile", ["require", "exports", "entities/base/xm
         function SheetFile(id, name, isLoad) {
             var _this = this;
             if (!isLoad) {
-                _this = _super.call(this, new node_5.Node("worksheet", [], true, "", "http://schemas.openxmlformats.org/spreadsheetml/2006/main"), "sheet" + id + ".xml", "workbook/sheets") || this;
+                _this = _super.call(this, new node_6.Node("worksheet", [], true, "", "http://schemas.openxmlformats.org/spreadsheetml/2006/main"), "sheet" + id + ".xml", "workbook/sheets") || this;
                 _this.name = name;
                 // this.rId = rId;
                 _this.id = id;
-                _this.sheetData = _this.rootNode.child(new node_5.Node("sheetData", [], true, _this.defaultNamespace));
+                _this.sheetData = _this.rootNode.child(new node_6.Node("sheetData", [], true, _this.defaultNamespace));
             }
             return _this;
         }
@@ -1333,14 +1398,14 @@ define("entities/xlsx/files/sheetFile", ["require", "exports", "entities/base/xm
                 if (this.rootNode.child("dimension", this.defaultNamespace)) {
                     index++;
                 }
-                this.sheetViews = new node_5.Node("sheetViews", [], true, this.defaultNamespace);
+                this.sheetViews = new node_6.Node("sheetViews", [], true, this.defaultNamespace);
                 this.rootNode.children.splice(index, 0, this.sheetViews);
             }
         };
         SheetFile.prototype.createSheetView = function () {
             if (!this.sheetView) {
                 this.createSheetViews();
-                this.sheetView = this.sheetViews.child(new node_5.Node("sheetView", [], true, this.defaultNamespace));
+                this.sheetView = this.sheetViews.child(new node_6.Node("sheetView", [], true, this.defaultNamespace));
             }
         };
         SheetFile.prototype.getSheetViewBoolAttr = function (attr) {
@@ -1363,10 +1428,10 @@ define("entities/xlsx/files/sheetFile", ["require", "exports", "entities/base/xm
             }
         };
         return SheetFile;
-    }(xml_4.Xml));
+    }(xml_5.Xml));
     exports.SheetFile = SheetFile;
 });
-define("entities/xlsx/files/workbookFile", ["require", "exports", "entities/base/xml", "entities/base/node", "entities/xlsx/files/sheetFile", "entities/base/attribute", "util/parser"], function (require, exports, xml_5, node_6, sheetFile_1, attribute_7, parser_5) {
+define("entities/xlsx/files/workbookFile", ["require", "exports", "entities/base/node", "entities/xlsx/files/sheetFile", "entities/base/attribute", "util/parser", "entities/base/fileBase"], function (require, exports, node_7, sheetFile_1, attribute_7, parser_5, fileBase_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -1383,13 +1448,35 @@ define("entities/xlsx/files/workbookFile", ["require", "exports", "entities/base
         function WorkbookFile(eventBus, fileName, filePath, isLoad) {
             var _this = this;
             if (!isLoad) {
-                _this = _super.call(this, new node_6.Node("workbook", [], true, "", "http://schemas.openxmlformats.org/spreadsheetml/2006/main"), fileName || "workbook.xml", filePath || "workbook") || this;
+                _this = _super.call(this, new node_7.Node("workbook", [], true, "", "http://schemas.openxmlformats.org/spreadsheetml/2006/main"), fileName || "workbook.xml", filePath || "workbook") || this;
                 _this.rootNode.addNamespace("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "r");
                 _this.workbookViews = [];
-                _this.sheets = _this.addWorkbookChild("sheets", _this.defaultNamespace).node;
+                _this.sheets = _this.addRootChild("sheets", _this.defaultNamespace).node;
                 _this.initializeView();
                 _this.bindListeners(eventBus);
             }
+            _this.RootChildNodes = [
+                "bookViews",
+                "calcPr",
+                "customWorkbookViews",
+                "definedNames",
+                "externalReferences",
+                "extLst",
+                "fileRecoveryPr",
+                "fileSharing",
+                "fileVersion",
+                "functionGroups",
+                "oleSize",
+                "pivotCaches",
+                "sheets",
+                "smartTagPr",
+                "smartTagTypes",
+                "webPublishing",
+                "webPublishObjects",
+                "workbookPr",
+                "workbookProtection"
+            ];
+            _this.FirstChildNode = "bookViews";
             return _this;
         }
         // /**
@@ -1497,13 +1584,15 @@ define("entities/xlsx/files/workbookFile", ["require", "exports", "entities/base
                 sheetNode.attribute(new attribute_7.Attribute("id", rId, true, _this.rootNode.namespaces["http://schemas.openxmlformats.org/officeDocument/2006/relationships"]));
             });
             eventBus.startListening("setSheetWorkbookView", function (sheetId, index) {
-                var workbookView = index ? _this.workbookViews.find(function (wv) { return wv.index === index; }) : undefined;
+                var workbookView = index
+                    ? _this.workbookViews.find(function (wv) { return wv.index === index; })
+                    : undefined;
                 if (!workbookView) {
                     workbookView = _this.workbookViews.find(function (wv) {
                         return wv.sheets.find(function (s) { return s === sheetId; });
                     });
                     if (!workbookView) {
-                        var workbookView_1 = new node_6.Node("workbookView", [], true, _this.defaultNamespace);
+                        var workbookView_1 = new node_7.Node("workbookView", [], true, _this.defaultNamespace);
                         _this.workbookViews.push({
                             sheets: [sheetId],
                             node: workbookView_1,
@@ -1525,70 +1614,24 @@ define("entities/xlsx/files/workbookFile", ["require", "exports", "entities/base
          * Initilize workbook view
          */
         WorkbookFile.prototype.initializeView = function () {
-            this.bookViews = this.addWorkbookChild("bookViews", this.defaultNamespace).node;
+            this.bookViews = this.addRootChild("bookViews", this.defaultNamespace).node;
             var activeTab = new attribute_7.Attribute("activeTab", "0", true, this.defaultNamespace);
-            var workbookView = new node_6.Node("workbookView", [activeTab], true, this.defaultNamespace);
+            var workbookView = new node_7.Node("workbookView", [activeTab], true, this.defaultNamespace);
             this.workbookViews.push({ sheets: [], node: workbookView, index: 0 });
-            this.bookViews.child(new node_6.Node("workbookView", [activeTab], true, this.defaultNamespace));
+            this.bookViews.child(new node_7.Node("workbookView", [activeTab], true, this.defaultNamespace));
         };
         /**
          * Add a new sheet
          * @param {SheetFile} sheet - The sheet to add
          */
         WorkbookFile.prototype.addSheet = function (sheet) {
-            this.sheets.child(new node_6.Node("sheet", [
+            this.sheets.child(new node_7.Node("sheet", [
                 new attribute_7.Attribute("name", sheet.name, true, this.defaultNamespace),
                 new attribute_7.Attribute("sheetId", sheet.id.toString(10), true, this.defaultNamespace)
             ], true, this.defaultNamespace));
         };
-        WorkbookFile.prototype.addWorkbookChild = function (childName, namespace) {
-            var savedChild = this.rootNode.child(childName, namespace || this.defaultNamespace);
-            if (!savedChild) {
-                var index = this.getWorkbookChildIndex(childName);
-                savedChild = new node_6.Node(childName, [], true, namespace || this.defaultNamespace);
-                this.rootNode.children.splice(index, 0, savedChild);
-                return { new: true, node: savedChild };
-            }
-            return { new: false, node: savedChild };
-        };
-        WorkbookFile.prototype.getWorkbookChildIndex = function (node) {
-            if (node === "bookViews") {
-                return 0;
-            }
-            var i = WorkbookFile.WorkbookChild.indexOf(node);
-            while (i > 0) {
-                i--;
-                var n = WorkbookFile.WorkbookChild[i];
-                if (this.rootNode.child(n)) {
-                    i++;
-                    break;
-                }
-            }
-            return i;
-        };
-        WorkbookFile.WorkbookChild = [
-            "bookViews",
-            "calcPr",
-            "customWorkbookViews",
-            "definedNames",
-            "externalReferences",
-            "extLst",
-            "fileRecoveryPr",
-            "fileSharing",
-            "fileVersion",
-            "functionGroups",
-            "oleSize",
-            "pivotCaches",
-            "sheets",
-            "smartTagPr",
-            "smartTagTypes",
-            "webPublishing",
-            "webPublishObjects",
-            "workbookPr",
-            "workbookProtection"
-        ];
         return WorkbookFile;
-    }(xml_5.Xml));
+    }(fileBase_1.FileBase));
     exports.WorkbookFile = WorkbookFile;
 });
 define("util/util", ["require", "exports"], function (require, exports) {
@@ -1776,7 +1819,9 @@ define("app/xlsx/sheet.builder", ["require", "exports", "app/xlsx/sheet", "entit
             eventBus.trigger("addWorkbookRelation", relPath, "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet", function (rId) {
                 eventBus.trigger("setSheetRelationId", sheetFile.id, rId);
             });
-            return new sheet_1.Sheet(sheetFile, eventBus, workbookFile);
+            var sheet = new sheet_1.Sheet(sheetFile, eventBus, workbookFile);
+            eventBus.trigger("setSheetWorkbookView", sheetFile.id);
+            return sheet;
         };
         SheetBuilder.create = function (content, eventBus, workbookFile, fileName, filePath, id, name) {
             return __awaiter(this, void 0, void 0, function () {

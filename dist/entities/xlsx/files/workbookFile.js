@@ -49,11 +49,11 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var xml_1 = require("../../base/xml");
 var node_1 = require("../../base/node");
 var sheetFile_1 = require("./sheetFile");
 var attribute_1 = require("../../base/attribute");
 var parser_1 = require("../../../util/parser");
+var fileBase_1 = require("../../base/fileBase");
 /**
  * Define new workbook file
  */
@@ -71,10 +71,32 @@ var WorkbookFile = /** @class */ (function (_super) {
             _this = _super.call(this, new node_1.Node("workbook", [], true, "", "http://schemas.openxmlformats.org/spreadsheetml/2006/main"), fileName || "workbook.xml", filePath || "workbook") || this;
             _this.rootNode.addNamespace("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "r");
             _this.workbookViews = [];
-            _this.sheets = _this.addWorkbookChild("sheets", _this.defaultNamespace).node;
+            _this.sheets = _this.addRootChild("sheets", _this.defaultNamespace).node;
             _this.initializeView();
             _this.bindListeners(eventBus);
         }
+        _this.RootChildNodes = [
+            "bookViews",
+            "calcPr",
+            "customWorkbookViews",
+            "definedNames",
+            "externalReferences",
+            "extLst",
+            "fileRecoveryPr",
+            "fileSharing",
+            "fileVersion",
+            "functionGroups",
+            "oleSize",
+            "pivotCaches",
+            "sheets",
+            "smartTagPr",
+            "smartTagTypes",
+            "webPublishing",
+            "webPublishObjects",
+            "workbookPr",
+            "workbookProtection"
+        ];
+        _this.FirstChildNode = "bookViews";
         return _this;
     }
     // /**
@@ -182,7 +204,9 @@ var WorkbookFile = /** @class */ (function (_super) {
             sheetNode.attribute(new attribute_1.Attribute("id", rId, true, _this.rootNode.namespaces["http://schemas.openxmlformats.org/officeDocument/2006/relationships"]));
         });
         eventBus.startListening("setSheetWorkbookView", function (sheetId, index) {
-            var workbookView = index ? _this.workbookViews.find(function (wv) { return wv.index === index; }) : undefined;
+            var workbookView = index
+                ? _this.workbookViews.find(function (wv) { return wv.index === index; })
+                : undefined;
             if (!workbookView) {
                 workbookView = _this.workbookViews.find(function (wv) {
                     return wv.sheets.find(function (s) { return s === sheetId; });
@@ -210,7 +234,7 @@ var WorkbookFile = /** @class */ (function (_super) {
      * Initilize workbook view
      */
     WorkbookFile.prototype.initializeView = function () {
-        this.bookViews = this.addWorkbookChild("bookViews", this.defaultNamespace).node;
+        this.bookViews = this.addRootChild("bookViews", this.defaultNamespace).node;
         var activeTab = new attribute_1.Attribute("activeTab", "0", true, this.defaultNamespace);
         var workbookView = new node_1.Node("workbookView", [activeTab], true, this.defaultNamespace);
         this.workbookViews.push({ sheets: [], node: workbookView, index: 0 });
@@ -226,53 +250,7 @@ var WorkbookFile = /** @class */ (function (_super) {
             new attribute_1.Attribute("sheetId", sheet.id.toString(10), true, this.defaultNamespace)
         ], true, this.defaultNamespace));
     };
-    WorkbookFile.prototype.addWorkbookChild = function (childName, namespace) {
-        var savedChild = this.rootNode.child(childName, namespace || this.defaultNamespace);
-        if (!savedChild) {
-            var index = this.getWorkbookChildIndex(childName);
-            savedChild = new node_1.Node(childName, [], true, namespace || this.defaultNamespace);
-            this.rootNode.children.splice(index, 0, savedChild);
-            return { new: true, node: savedChild };
-        }
-        return { new: false, node: savedChild };
-    };
-    WorkbookFile.prototype.getWorkbookChildIndex = function (node) {
-        if (node === "bookViews") {
-            return 0;
-        }
-        var i = WorkbookFile.WorkbookChild.indexOf(node);
-        while (i > 0) {
-            i--;
-            var n = WorkbookFile.WorkbookChild[i];
-            if (this.rootNode.child(n)) {
-                i++;
-                break;
-            }
-        }
-        return i;
-    };
-    WorkbookFile.WorkbookChild = [
-        "bookViews",
-        "calcPr",
-        "customWorkbookViews",
-        "definedNames",
-        "externalReferences",
-        "extLst",
-        "fileRecoveryPr",
-        "fileSharing",
-        "fileVersion",
-        "functionGroups",
-        "oleSize",
-        "pivotCaches",
-        "sheets",
-        "smartTagPr",
-        "smartTagTypes",
-        "webPublishing",
-        "webPublishObjects",
-        "workbookPr",
-        "workbookProtection"
-    ];
     return WorkbookFile;
-}(xml_1.Xml));
+}(fileBase_1.FileBase));
 exports.WorkbookFile = WorkbookFile;
 //# sourceMappingURL=workbookFile.js.map
