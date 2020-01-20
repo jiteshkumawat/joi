@@ -43,7 +43,7 @@ var FileBase = /** @class */ (function (_super) {
      * @returns {number} - Possible index of child node to add
      */
     FileBase.prototype.getRootChildIndex = function (node) {
-        if (node === this.RootChildNodes[0]) {
+        if (node === this.RootChildNodes[0] || this.rootNode.children.length === 0) {
             return 0;
         }
         var i = this.RootChildNodes.indexOf(node);

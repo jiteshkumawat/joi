@@ -10,26 +10,17 @@ export class SheetFile extends FileBase {
    * @param name - Sheet Name. Reffered in workbook file.
    */
   constructor(id: number, name: string, isLoad?: boolean) {
-    if (!isLoad) {
-      super(
-        new Node(
-          "worksheet",
-          [],
-          true,
-          "",
-          "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
-        ),
-        "sheet" + id + ".xml",
-        "workbook/sheets"
-      );
-
-      this.name = name;
-      // this.rId = rId;
-      this.id = id;
-
-      this.sheetData = this.addRootChild("sheetData", this.defaultNamespace).node;
-    }
-
+    super(
+      new Node(
+        "worksheet",
+        [],
+        true,
+        "",
+        "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+      ),
+      "sheet" + id + ".xml",
+      "workbook/sheets"
+    );
     this.RootChildNodes = [
       "sheetPr",
       "dimension",
@@ -71,6 +62,16 @@ export class SheetFile extends FileBase {
       "tableParts",
       "extLst"
     ];
+    if (!isLoad) {
+      this.name = name;
+      // this.rId = rId;
+      this.id = id;
+
+      this.sheetData = this.addRootChild(
+        "sheetData",
+        this.defaultNamespace
+      ).node;
+    }
   }
 
   /**
@@ -217,7 +218,10 @@ export class SheetFile extends FileBase {
 
   private createSheetViews() {
     if (!this.sheetViews) {
-      this.sheetViews = this.addRootChild("sheetViews", this.defaultNamespace).node;
+      this.sheetViews = this.addRootChild(
+        "sheetViews",
+        this.defaultNamespace
+      ).node;
     }
   }
 
@@ -225,7 +229,12 @@ export class SheetFile extends FileBase {
     if (!this.sheetView) {
       this.createSheetViews();
       this.sheetView = this.sheetViews.child(
-        new Node("sheetView", [], true, this.defaultNamespace)
+        new Node(
+          "sheetView",
+          [new Attribute("workbookViewId", "0", true, this.defaultNamespace)],
+          true,
+          this.defaultNamespace
+        )
       );
     }
   }

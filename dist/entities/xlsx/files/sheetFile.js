@@ -61,14 +61,7 @@ var SheetFile = /** @class */ (function (_super) {
      * @param name - Sheet Name. Reffered in workbook file.
      */
     function SheetFile(id, name, isLoad) {
-        var _this = this;
-        if (!isLoad) {
-            _this = _super.call(this, new node_1.Node("worksheet", [], true, "", "http://schemas.openxmlformats.org/spreadsheetml/2006/main"), "sheet" + id + ".xml", "workbook/sheets") || this;
-            _this.name = name;
-            // this.rId = rId;
-            _this.id = id;
-            _this.sheetData = _this.addRootChild("sheetData", _this.defaultNamespace).node;
-        }
+        var _this = _super.call(this, new node_1.Node("worksheet", [], true, "", "http://schemas.openxmlformats.org/spreadsheetml/2006/main"), "sheet" + id + ".xml", "workbook/sheets") || this;
         _this.RootChildNodes = [
             "sheetPr",
             "dimension",
@@ -110,6 +103,12 @@ var SheetFile = /** @class */ (function (_super) {
             "tableParts",
             "extLst"
         ];
+        if (!isLoad) {
+            _this.name = name;
+            // this.rId = rId;
+            _this.id = id;
+            _this.sheetData = _this.addRootChild("sheetData", _this.defaultNamespace).node;
+        }
         return _this;
     }
     Object.defineProperty(SheetFile.prototype, "showFormula", {
@@ -247,7 +246,7 @@ var SheetFile = /** @class */ (function (_super) {
     SheetFile.prototype.createSheetView = function () {
         if (!this.sheetView) {
             this.createSheetViews();
-            this.sheetView = this.sheetViews.child(new node_1.Node("sheetView", [], true, this.defaultNamespace));
+            this.sheetView = this.sheetViews.child(new node_1.Node("sheetView", [new attribute_1.Attribute("workbookViewId", "0", true, this.defaultNamespace)], true, this.defaultNamespace));
         }
     };
     SheetFile.prototype.getSheetViewBoolAttr = function (attr) {

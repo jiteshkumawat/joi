@@ -27,7 +27,7 @@ export class FileBase extends Xml {
    * @returns {number} - Possible index of child node to add
    */
   protected getRootChildIndex(node: string): number {
-    if (node === this.RootChildNodes[0]) {
+    if (node === this.RootChildNodes[0] || this.rootNode.children.length === 0) {
       return 0;
     }
     let i = this.RootChildNodes.indexOf(node);

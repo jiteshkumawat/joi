@@ -21,29 +21,17 @@ export class WorkbookFile extends FileBase {
     filePath?: string,
     isLoad?: boolean
   ) {
-    if (!isLoad) {
-      super(
-        new Node(
-          "workbook",
-          [],
-          true,
-          "",
-          "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
-        ),
-        fileName || "workbook.xml",
-        filePath || "workbook"
-      );
-
-      this.rootNode.addNamespace(
-        "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
-        "r"
-      );
-
-      this.workbookViews = [];
-      this.sheets = this.addRootChild("sheets", this.defaultNamespace).node;
-      this.initializeView();
-      this.bindListeners(eventBus);
-    }
+    super(
+      new Node(
+        "workbook",
+        [],
+        true,
+        "",
+        "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+      ),
+      fileName || "workbook.xml",
+      filePath || "workbook"
+    );
 
     this.RootChildNodes = [
       "bookViews",
@@ -66,6 +54,18 @@ export class WorkbookFile extends FileBase {
       "workbookPr",
       "workbookProtection"
     ];
+
+    if (!isLoad) {
+      this.rootNode.addNamespace(
+        "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
+        "r"
+      );
+
+      this.workbookViews = [];
+      this.sheets = this.addRootChild("sheets", this.defaultNamespace).node;
+      this.initializeView();
+      this.bindListeners(eventBus);
+    }
   }
 
   /**
@@ -220,34 +220,9 @@ export class WorkbookFile extends FileBase {
 
     eventBus.startListening(
       "setSheetWorkbookView",
-      (sheetId: Number, index?: Number) => {
-        let workbookView = index
-          ? this.workbookViews.find(wv => wv.index === index)
-          : undefined;
-        if (!workbookView) {
-          workbookView = this.workbookViews.find(wv =>
-            wv.sheets.find(s => s === sheetId)
-          );
-          if (!workbookView) {
-            let workbookView = new Node(
-              "workbookView",
-              [],
-              true,
-              this.defaultNamespace
-            );
-            this.workbookViews.push({
-              sheets: [sheetId],
-              node: workbookView,
-              index: this.workbookViews.length
-            });
-          }
-        } else {
-          if (!workbookView.sheets) {
-            workbookView.sheets = [];
-          }
-          if (!workbookView.sheets.find(s => s === sheetId)) {
-            workbookView.sheets.push(sheetId);
-          }
+      (sheetId: Number, index?: Number, callback?: Function) => {
+        console.log("setSheetWorkbookView triggered");
+        if (index === undefined || index === null) {
         }
       }
     );

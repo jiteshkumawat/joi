@@ -66,15 +66,7 @@ var WorkbookFile = /** @class */ (function (_super) {
      * @param isLoad - The file
      */
     function WorkbookFile(eventBus, fileName, filePath, isLoad) {
-        var _this = this;
-        if (!isLoad) {
-            _this = _super.call(this, new node_1.Node("workbook", [], true, "", "http://schemas.openxmlformats.org/spreadsheetml/2006/main"), fileName || "workbook.xml", filePath || "workbook") || this;
-            _this.rootNode.addNamespace("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "r");
-            _this.workbookViews = [];
-            _this.sheets = _this.addRootChild("sheets", _this.defaultNamespace).node;
-            _this.initializeView();
-            _this.bindListeners(eventBus);
-        }
+        var _this = _super.call(this, new node_1.Node("workbook", [], true, "", "http://schemas.openxmlformats.org/spreadsheetml/2006/main"), fileName || "workbook.xml", filePath || "workbook") || this;
         _this.RootChildNodes = [
             "bookViews",
             "calcPr",
@@ -96,6 +88,13 @@ var WorkbookFile = /** @class */ (function (_super) {
             "workbookPr",
             "workbookProtection"
         ];
+        if (!isLoad) {
+            _this.rootNode.addNamespace("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "r");
+            _this.workbookViews = [];
+            _this.sheets = _this.addRootChild("sheets", _this.defaultNamespace).node;
+            _this.initializeView();
+            _this.bindListeners(eventBus);
+        }
         return _this;
     }
     // /**
@@ -202,30 +201,9 @@ var WorkbookFile = /** @class */ (function (_super) {
             });
             sheetNode.attribute(new attribute_1.Attribute("id", rId, true, _this.rootNode.namespaces["http://schemas.openxmlformats.org/officeDocument/2006/relationships"]));
         });
-        eventBus.startListening("setSheetWorkbookView", function (sheetId, index) {
-            var workbookView = index
-                ? _this.workbookViews.find(function (wv) { return wv.index === index; })
-                : undefined;
-            if (!workbookView) {
-                workbookView = _this.workbookViews.find(function (wv) {
-                    return wv.sheets.find(function (s) { return s === sheetId; });
-                });
-                if (!workbookView) {
-                    var workbookView_1 = new node_1.Node("workbookView", [], true, _this.defaultNamespace);
-                    _this.workbookViews.push({
-                        sheets: [sheetId],
-                        node: workbookView_1,
-                        index: _this.workbookViews.length
-                    });
-                }
-            }
-            else {
-                if (!workbookView.sheets) {
-                    workbookView.sheets = [];
-                }
-                if (!workbookView.sheets.find(function (s) { return s === sheetId; })) {
-                    workbookView.sheets.push(sheetId);
-                }
+        eventBus.startListening("setSheetWorkbookView", function (sheetId, index, callback) {
+            console.log("setSheetWorkbookView triggered");
+            if (index === undefined || index === null) {
             }
         });
     };

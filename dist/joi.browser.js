@@ -417,7 +417,7 @@ define("entities/base/fileBase", ["require", "exports", "entities/base/xml", "en
          * @returns {number} - Possible index of child node to add
          */
         FileBase.prototype.getRootChildIndex = function (node) {
-            if (node === this.RootChildNodes[0]) {
+            if (node === this.RootChildNodes[0] || this.rootNode.children.length === 0) {
                 return 0;
             }
             var i = this.RootChildNodes.indexOf(node);
@@ -1262,14 +1262,7 @@ define("entities/xlsx/files/sheetFile", ["require", "exports", "entities/base/fi
          * @param name - Sheet Name. Reffered in workbook file.
          */
         function SheetFile(id, name, isLoad) {
-            var _this = this;
-            if (!isLoad) {
-                _this = _super.call(this, new node_6.Node("worksheet", [], true, "", "http://schemas.openxmlformats.org/spreadsheetml/2006/main"), "sheet" + id + ".xml", "workbook/sheets") || this;
-                _this.name = name;
-                // this.rId = rId;
-                _this.id = id;
-                _this.sheetData = _this.addRootChild("sheetData", _this.defaultNamespace).node;
-            }
+            var _this = _super.call(this, new node_6.Node("worksheet", [], true, "", "http://schemas.openxmlformats.org/spreadsheetml/2006/main"), "sheet" + id + ".xml", "workbook/sheets") || this;
             _this.RootChildNodes = [
                 "sheetPr",
                 "dimension",
@@ -1311,6 +1304,12 @@ define("entities/xlsx/files/sheetFile", ["require", "exports", "entities/base/fi
                 "tableParts",
                 "extLst"
             ];
+            if (!isLoad) {
+                _this.name = name;
+                // this.rId = rId;
+                _this.id = id;
+                _this.sheetData = _this.addRootChild("sheetData", _this.defaultNamespace).node;
+            }
             return _this;
         }
         Object.defineProperty(SheetFile.prototype, "showFormula", {
@@ -1448,7 +1447,7 @@ define("entities/xlsx/files/sheetFile", ["require", "exports", "entities/base/fi
         SheetFile.prototype.createSheetView = function () {
             if (!this.sheetView) {
                 this.createSheetViews();
-                this.sheetView = this.sheetViews.child(new node_6.Node("sheetView", [], true, this.defaultNamespace));
+                this.sheetView = this.sheetViews.child(new node_6.Node("sheetView", [new attribute_6.Attribute("workbookViewId", "0", true, this.defaultNamespace)], true, this.defaultNamespace));
             }
         };
         SheetFile.prototype.getSheetViewBoolAttr = function (attr) {
@@ -1489,15 +1488,7 @@ define("entities/xlsx/files/workbookFile", ["require", "exports", "entities/base
          * @param isLoad - The file
          */
         function WorkbookFile(eventBus, fileName, filePath, isLoad) {
-            var _this = this;
-            if (!isLoad) {
-                _this = _super.call(this, new node_7.Node("workbook", [], true, "", "http://schemas.openxmlformats.org/spreadsheetml/2006/main"), fileName || "workbook.xml", filePath || "workbook") || this;
-                _this.rootNode.addNamespace("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "r");
-                _this.workbookViews = [];
-                _this.sheets = _this.addRootChild("sheets", _this.defaultNamespace).node;
-                _this.initializeView();
-                _this.bindListeners(eventBus);
-            }
+            var _this = _super.call(this, new node_7.Node("workbook", [], true, "", "http://schemas.openxmlformats.org/spreadsheetml/2006/main"), fileName || "workbook.xml", filePath || "workbook") || this;
             _this.RootChildNodes = [
                 "bookViews",
                 "calcPr",
@@ -1519,6 +1510,13 @@ define("entities/xlsx/files/workbookFile", ["require", "exports", "entities/base
                 "workbookPr",
                 "workbookProtection"
             ];
+            if (!isLoad) {
+                _this.rootNode.addNamespace("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "r");
+                _this.workbookViews = [];
+                _this.sheets = _this.addRootChild("sheets", _this.defaultNamespace).node;
+                _this.initializeView();
+                _this.bindListeners(eventBus);
+            }
             return _this;
         }
         // /**
@@ -1625,30 +1623,9 @@ define("entities/xlsx/files/workbookFile", ["require", "exports", "entities/base
                 });
                 sheetNode.attribute(new attribute_7.Attribute("id", rId, true, _this.rootNode.namespaces["http://schemas.openxmlformats.org/officeDocument/2006/relationships"]));
             });
-            eventBus.startListening("setSheetWorkbookView", function (sheetId, index) {
-                var workbookView = index
-                    ? _this.workbookViews.find(function (wv) { return wv.index === index; })
-                    : undefined;
-                if (!workbookView) {
-                    workbookView = _this.workbookViews.find(function (wv) {
-                        return wv.sheets.find(function (s) { return s === sheetId; });
-                    });
-                    if (!workbookView) {
-                        var workbookView_1 = new node_7.Node("workbookView", [], true, _this.defaultNamespace);
-                        _this.workbookViews.push({
-                            sheets: [sheetId],
-                            node: workbookView_1,
-                            index: _this.workbookViews.length
-                        });
-                    }
-                }
-                else {
-                    if (!workbookView.sheets) {
-                        workbookView.sheets = [];
-                    }
-                    if (!workbookView.sheets.find(function (s) { return s === sheetId; })) {
-                        workbookView.sheets.push(sheetId);
-                    }
+            eventBus.startListening("setSheetWorkbookView", function (sheetId, index, callback) {
+                console.log("setSheetWorkbookView triggered");
+                if (index === undefined || index === null) {
                 }
             });
         };

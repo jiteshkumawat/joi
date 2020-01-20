@@ -19,10 +19,9 @@
     // console.log(fl);
 
     var workbook = new joi.xlsx("workbook.xlsx");
-    console.log(workbook);
-    console.log(JSON.stringify(workbook));
-
+    
     var sheet = workbook.sheet("Sheet1");
+    sheet.configure({showGridLines: false});
     workbook.sheet("Sheet2");
     
     console.log(sheet);
