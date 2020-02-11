@@ -143,7 +143,131 @@ define("entities/base/documentationNode", ["require", "exports"], function (requ
     }());
     exports.DocumentationNode = DocumentationNode;
 });
-define("entities/base/node", ["require", "exports", "entities/base/attribute"], function (require, exports, attribute_1) {
+define("util/constants", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var Constants = /** @class */ (function () {
+        function Constants() {
+        }
+        Constants.Errors = {
+            ErrCreateFileObject: "Err: Not able to create file object.",
+            ErrCreateWorkbook: "Err: Not able to create workbook."
+        };
+        Constants.Regex = {
+            ValidCellString: /^[A-Z]{1,3}[1-9]\d{0,6}$/,
+            Column: /^[A-Z]{1,3}/,
+            Row: /\d{1,7}$/,
+            NumericId: /\d+/
+        };
+        Constants.Common = {
+            Xmlns: "xmlns"
+        };
+        Constants.FileName = {
+            ContentTypes: "[Content_Types].xml",
+            Relationship: ".rels",
+            SharedString: "sharedstrings.xml",
+            Worksheet: "sheet",
+            Workbook: "workbook.xml"
+        };
+        Constants.FilePath = {
+            Relationship: "_rels",
+            Workbook: "workbook",
+            Worksheet: "workbook/sheets"
+        };
+        Constants.Namespace = {
+            ContentType: "http://schemas.openxmlformats.org/package/2006/content-types",
+            RelationshipPackage: "http://schemas.openxmlformats.org/package/2006/relationships",
+            Workbook: "http://schemas.openxmlformats.org/spreadsheetml/2006/main",
+            Relationships: "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+        };
+        Constants.ContentTypes = {
+            Worksheet: "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml",
+            Workbook: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml",
+            Relationship: "application/vnd.openxmlformats-package.relationships+xml",
+            SharedString: "application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml"
+        };
+        Constants.Relationships = {
+            Worksheet: "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet",
+            SharedString: "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings",
+            Workbook: "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument"
+        };
+        Constants.Events = {
+            AddContentType: "addContentType",
+            SetSheetWorkbookView: "setSheetWorkbookView",
+            SetSheetRelationId: "setSheetRelationId",
+            AddWorkbookRelation: "addWorkbookRelation",
+            AddFile: "addFile",
+            SharedString: "sharedString"
+        };
+        Constants.RootChildNodes = {
+            Worksheet: [
+                "sheetPr",
+                "dimension",
+                "sheetViews",
+                "sheetFormatPr",
+                "cols",
+                "sheetData",
+                "sheetCalcPr",
+                "sheetProtection",
+                "protectedRanges",
+                "scenarios",
+                "autoFilter",
+                "sortState",
+                "dataConsolidate",
+                "customSheetViews",
+                "mergeCells",
+                "phoneticPr",
+                "conditionalFormatting",
+                "dataValidations",
+                "hyperlinks",
+                "printOptions",
+                "pageMargins",
+                "pageSetup",
+                "headerFooter",
+                "rowBreaks",
+                "colBreaks",
+                "customProperties",
+                "cellWatches",
+                "ignoredErrors",
+                "smartTags",
+                "drawing",
+                "legacyDrawing",
+                "legacyDrawingHF",
+                "drawingHF",
+                "picture",
+                "oleObjects",
+                "controls",
+                "webPublishItems",
+                "tableParts",
+                "extLst"
+            ],
+            Workbook: [
+                "bookViews",
+                "calcPr",
+                "customWorkbookViews",
+                "definedNames",
+                "externalReferences",
+                "extLst",
+                "fileRecoveryPr",
+                "fileSharing",
+                "fileVersion",
+                "functionGroups",
+                "oleSize",
+                "pivotCaches",
+                "sheets",
+                "smartTagPr",
+                "smartTagTypes",
+                "webPublishing",
+                "webPublishObjects",
+                "workbookPr",
+                "workbookProtection"
+            ]
+        };
+        return Constants;
+    }());
+    exports.Constants = Constants;
+});
+define("entities/base/node", ["require", "exports", "entities/base/attribute", "util/constants"], function (require, exports, attribute_1, constants_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -164,15 +288,24 @@ define("entities/base/node", ["require", "exports", "entities/base/attribute"], 
             this.attributes = attributes;
             this.isActive = isActive;
             this.namespace = namespace;
-            this.xmlns = xmlns;
-            this.children = [];
+            this._children = [];
             this.namespaces = {};
             if (xmlns) {
                 this.namespaces[xmlns] = "";
-                var namespaceAttr = new attribute_1.Attribute("xmlns", xmlns);
+                var namespaceAttr = new attribute_1.Attribute(constants_1.Constants.Common.Xmlns, xmlns);
                 this.attributes.push(namespaceAttr);
             }
         }
+        Object.defineProperty(Node.prototype, "children", {
+            /**
+             * The child nodes collection
+             */
+            get: function () {
+                return this._children;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * Adds a new namespace in root node
          * @param {string} namespace - The namespace string
@@ -182,22 +315,36 @@ define("entities/base/node", ["require", "exports", "entities/base/attribute"], 
         Node.prototype.addNamespace = function (namespace, prefix) {
             this.namespaces[namespace] = prefix;
             prefix = prefix ? ":" + prefix : "";
-            var namespaceAttr = new attribute_1.Attribute("xmlns" + prefix, namespace);
+            var namespaceAttr = new attribute_1.Attribute(constants_1.Constants.Common.Xmlns + prefix, namespace);
             this.addAttribute(namespaceAttr);
             return namespaceAttr;
+        };
+        /**
+         * Get namespace prefix which can be used
+         * @param namespace - The namespace string
+         */
+        Node.prototype.getNamespacePrefix = function (namespace) {
+            if (this.namespaces && this.namespaces[namespace]) {
+                return this.namespaces[namespace];
+            }
+            if (this.parent) {
+                return this.parent.getNamespacePrefix(namespace);
+            }
+            return null;
         };
         /**
          * Gets or adds a child of node
          * @param {Node | string} node - The node or node name to get or add. Use string value to search child and node value to append.
          * @param {string} namespace - The namespace of node
+         * @param {number} index - The child index
          * @returns {Node} - The child node
          */
-        Node.prototype.child = function (node, namespace) {
+        Node.prototype.child = function (node, namespace, index) {
             if (typeof node === "string") {
                 return this.getChild(namespace ? namespace + ":" + node : node);
             }
             else {
-                return this.addChild(node);
+                return this.addChild(node, index);
             }
         };
         /**
@@ -225,7 +372,7 @@ define("entities/base/node", ["require", "exports", "entities/base/attribute"], 
             var savedAttribute = null, attrName = typeof attribute === "string" ? attribute : attribute.name, attrNamespace = typeof attribute === "string" ? "" : attribute.namespace;
             if (typeof attribute === "string" &&
                 attribute.indexOf(":") > 0 &&
-                !attribute.startsWith("xmlns:")) {
+                !attribute.startsWith(constants_1.Constants.Common.Xmlns + ":")) {
                 var attrValues = attribute.split(":");
                 attrName = attrValues[1];
                 attrNamespace = attrValues[0];
@@ -252,7 +399,7 @@ define("entities/base/node", ["require", "exports", "entities/base/attribute"], 
                 : this.name;
             var attributes = "", childString = "", xmlns = "";
             this.attributes.forEach(function (attribute) {
-                if (attribute.name.startsWith("xmlns")) {
+                if (attribute.name.startsWith(constants_1.Constants.Common.Xmlns)) {
                     xmlns = xmlns + " " + attribute.toString();
                 }
                 else {
@@ -290,6 +437,19 @@ define("entities/base/node", ["require", "exports", "entities/base/attribute"], 
                     ">");
             }
         };
+        /**
+         * Convert Node to JSON
+         */
+        Node.prototype.toJSON = function () {
+            return {
+                name: this.name,
+                attributes: this.attributes,
+                isActive: this.isActive,
+                namespace: this.namespace,
+                namespaces: this.namespaces,
+                children: this._children
+            };
+        };
         Node.prototype.addAttribute = function (attribute) {
             var savedAttr = this.getAttribute(attribute);
             if (savedAttr) {
@@ -299,8 +459,14 @@ define("entities/base/node", ["require", "exports", "entities/base/attribute"], 
             this.attributes.push(attribute);
             return attribute;
         };
-        Node.prototype.addChild = function (node) {
-            this.children.push(node);
+        Node.prototype.addChild = function (node, index) {
+            node.parent = this;
+            if (isNaN(index)) {
+                this._children.push(node);
+            }
+            else {
+                this._children.splice(index, 0, node);
+            }
             return node;
         };
         Node.prototype.getChild = function (name) {
@@ -442,7 +608,7 @@ define("entities/base/fileBase", ["require", "exports", "entities/base/xml", "en
             if (!savedChild) {
                 var index = this.getRootChildIndex(childName);
                 savedChild = new node_1.Node(childName, [], true, namespace || this.defaultNamespace);
-                this.rootNode.children.splice(index, 0, savedChild);
+                this.rootNode.child(savedChild, null, index);
                 return { new: true, node: savedChild };
             }
             return { new: false, node: savedChild };
@@ -451,7 +617,7 @@ define("entities/base/fileBase", ["require", "exports", "entities/base/xml", "en
     }(xml_1.Xml));
     exports.FileBase = FileBase;
 });
-define("util/parser", ["require", "exports", "entities/base/attribute", "entities/base/node"], function (require, exports, attribute_2, node_2) {
+define("util/parser", ["require", "exports", "entities/base/attribute", "entities/base/node", "util/constants"], function (require, exports, attribute_2, node_2, constants_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -515,7 +681,7 @@ define("util/parser", ["require", "exports", "entities/base/attribute", "entitie
             parsedNode.namespaces = {};
             for (var i = 0; i < node.attributes.length; i++) {
                 var attr = node.attributes[i];
-                if (attr.name.startsWith("xmlns")) {
+                if (attr.name.startsWith(constants_2.Constants.Common.Xmlns)) {
                     parsedNode.namespaces[attr.value] = attr.name.split(":")[1] || "";
                 }
             }
@@ -550,7 +716,7 @@ define("util/parser", ["require", "exports", "entities/base/attribute", "entitie
             this.addNameSpaceForNodeJS(nodeName, node, xmlNode);
             if (node[nodeName] && node[nodeName].$) {
                 for (var attr in node[nodeName].$) {
-                    if (!attr.startsWith("xmlns")) {
+                    if (!attr.startsWith(constants_2.Constants.Common.Xmlns)) {
                         var attrName = attr, attrNamespace = "";
                         if (attr.indexOf(":") > 0) {
                             var attrParams = attr.split(":");
@@ -582,7 +748,7 @@ define("util/parser", ["require", "exports", "entities/base/attribute", "entitie
             rootNode.namespaces = {};
             if (node[nodeName] && node[nodeName].$) {
                 for (var attr in node[nodeName].$) {
-                    if (attr.startsWith("xmlns")) {
+                    if (attr.startsWith(constants_2.Constants.Common.Xmlns)) {
                         rootNode.namespaces[node[nodeName].$[attr]] =
                             attr.split(":")[1] || "";
                     }
@@ -593,7 +759,7 @@ define("util/parser", ["require", "exports", "entities/base/attribute", "entitie
     }());
     exports.XmlParser = XmlParser;
 });
-define("entities/files/relationships", ["require", "exports", "entities/base/xml", "entities/base/attribute", "entities/base/node", "util/parser"], function (require, exports, xml_2, attribute_3, node_3, parser_1) {
+define("entities/files/relationships", ["require", "exports", "entities/base/xml", "entities/base/attribute", "entities/base/node", "util/parser", "util/constants"], function (require, exports, xml_2, attribute_3, node_3, parser_1, constants_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -607,7 +773,7 @@ define("entities/files/relationships", ["require", "exports", "entities/base/xml
          * @param {string} filePath - The file path
          */
         function Relationships(fileName, filePath) {
-            var _this = _super.call(this, new node_3.Node("Relationships", [], true, "", "http://schemas.openxmlformats.org/package/2006/relationships"), fileName || ".rels", filePath || "_rels") || this;
+            var _this = _super.call(this, new node_3.Node("Relationships", [], true, "", constants_3.Constants.Namespace.RelationshipPackage), fileName || constants_3.Constants.FileName.Relationship, filePath || constants_3.Constants.FilePath.Relationship) || this;
             _this.id = 1;
             return _this;
         }
@@ -620,7 +786,7 @@ define("entities/files/relationships", ["require", "exports", "entities/base/xml
          */
         Relationships.prototype.addRelationship = function (target, type, id) {
             if (typeof id === "string") {
-                id = parseInt(id.match(/\d+/)[0], 10);
+                id = parseInt(id.match(constants_3.Constants.Regex.NumericId)[0], 10);
             }
             if (!id) {
                 id = this.id++;
@@ -685,7 +851,7 @@ define("entities/files/relationships", ["require", "exports", "entities/base/xml
                     switch (_a.label) {
                         case 0:
                             relationships = new Relationships();
-                            return [4 /*yield*/, parser_1.XmlParser.parse(content, relationships, "http://schemas.openxmlformats.org/package/2006/relationships")];
+                            return [4 /*yield*/, parser_1.XmlParser.parse(content, relationships, constants_3.Constants.Namespace.RelationshipPackage)];
                         case 1:
                             _a.sent();
                             relationships.filePath = filePath || "";
@@ -700,7 +866,7 @@ define("entities/files/relationships", ["require", "exports", "entities/base/xml
     }(xml_2.Xml));
     exports.Relationships = Relationships;
 });
-define("util/fileHandler", ["require", "exports"], function (require, exports) {
+define("util/fileHandler", ["require", "exports", "util/constants"], function (require, exports, constants_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -866,7 +1032,7 @@ define("util/fileHandler", ["require", "exports"], function (require, exports) {
                     }
                     catch (err) {
                         if (callback) {
-                            callback(null, "Err: Not able to create file object.");
+                            callback(null, constants_4.Constants.Errors.ErrCreateFileObject);
                         }
                         else {
                             throw err;
@@ -876,7 +1042,7 @@ define("util/fileHandler", ["require", "exports"], function (require, exports) {
             }
             catch (err) {
                 if (callback) {
-                    callback("Err: Not able to create workbook.");
+                    callback(constants_4.Constants.Errors.ErrCreateWorkbook);
                     console.error(err);
                 }
                 else {
@@ -912,7 +1078,7 @@ define("util/fileHandler", ["require", "exports"], function (require, exports) {
             }
             catch (err) {
                 if (callback) {
-                    callback("Err: Not able to create workbook.");
+                    callback(constants_4.Constants.Errors.ErrCreateWorkbook);
                     console.error(err);
                 }
                 else {
@@ -1021,7 +1187,7 @@ define("util/eventBus", ["require", "exports"], function (require, exports) {
     }());
     exports.EventBus = EventBus;
 });
-define("entities/files/contentTypes", ["require", "exports", "entities/base/xml", "entities/base/node", "entities/base/attribute", "util/parser"], function (require, exports, xml_3, node_4, attribute_4, parser_2) {
+define("entities/files/contentTypes", ["require", "exports", "entities/base/xml", "entities/base/node", "entities/base/attribute", "util/parser", "util/constants"], function (require, exports, xml_3, node_4, attribute_4, parser_2, constants_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -1035,7 +1201,7 @@ define("entities/files/contentTypes", ["require", "exports", "entities/base/xml"
         function ContentTypes(eventBus, fileName) {
             var _this = this;
             if (!fileName) {
-                _this = _super.call(this, new node_4.Node("Types", [], true, "", "http://schemas.openxmlformats.org/package/2006/content-types"), "[Content_Types].xml") || this;
+                _this = _super.call(this, new node_4.Node("Types", [], true, "", constants_5.Constants.Namespace.ContentType), constants_5.Constants.FileName.ContentTypes) || this;
             }
             _this.defaults = {};
             _this.overrides = {};
@@ -1085,7 +1251,7 @@ define("entities/files/contentTypes", ["require", "exports", "entities/base/xml"
                     switch (_a.label) {
                         case 0:
                             contentTypes = new ContentTypes(eventBus, file.fileNameWithExtention);
-                            return [4 /*yield*/, parser_2.XmlParser.parse(file.fileContent, contentTypes, "http://schemas.openxmlformats.org/package/2006/content-types")];
+                            return [4 /*yield*/, parser_2.XmlParser.parse(file.fileContent, contentTypes, constants_5.Constants.Namespace.ContentType)];
                         case 1:
                             _a.sent();
                             contentTypes.rootNode.children.forEach(function (childNode) {
@@ -1114,8 +1280,8 @@ define("entities/files/contentTypes", ["require", "exports", "entities/base/xml"
          */
         ContentTypes.prototype.bindListeners = function (eventBus) {
             var _this = this;
-            eventBus.stopListening("addContentType");
-            eventBus.startListening("addContentType", function (type, contentType, arg) {
+            eventBus.stopListening(constants_5.Constants.Events.AddContentType);
+            eventBus.startListening(constants_5.Constants.Events.AddContentType, function (type, contentType, arg) {
                 if (type.toLowerCase() === "default") {
                     _this.addDefault(contentType, arg);
                 }
@@ -1128,7 +1294,7 @@ define("entities/files/contentTypes", ["require", "exports", "entities/base/xml"
     }(xml_3.Xml));
     exports.ContentTypes = ContentTypes;
 });
-define("entities/xlsx/files/sharedStringsFile", ["require", "exports", "entities/base/xml", "entities/base/node", "util/parser", "entities/base/attribute"], function (require, exports, xml_4, node_5, parser_3, attribute_5) {
+define("entities/xlsx/files/sharedStringsFile", ["require", "exports", "entities/base/xml", "entities/base/node", "util/parser", "entities/base/attribute", "util/constants"], function (require, exports, xml_4, node_5, parser_3, attribute_5, constants_6) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -1140,7 +1306,7 @@ define("entities/xlsx/files/sharedStringsFile", ["require", "exports", "entities
          * Initialize new workbook file
          */
         function SharedStringsFile() {
-            var _this = _super.call(this, new node_5.Node("sst", [], true, "", "http://schemas.openxmlformats.org/spreadsheetml/2006/main"), "sharedstrings.xml", "workbook") || this;
+            var _this = _super.call(this, new node_5.Node("sst", [], true, "", constants_6.Constants.Namespace.Workbook), constants_6.Constants.FileName.SharedString, constants_6.Constants.FilePath.Workbook) || this;
             // this.rootNode.addNamespace(
             //   "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
             //   "r"
@@ -1221,7 +1387,7 @@ define("entities/xlsx/files/sharedStringsFile", ["require", "exports", "entities
                             sharedStringsFile = new SharedStringsFile();
                             sharedStringsFile.fileName = fileName;
                             sharedStringsFile.filePath = filePath;
-                            return [4 /*yield*/, parser_3.XmlParser.parse(content, sharedStringsFile, "http://schemas.openxmlformats.org/spreadsheetml/2006/main")];
+                            return [4 /*yield*/, parser_3.XmlParser.parse(content, sharedStringsFile, constants_6.Constants.Namespace.Workbook)];
                         case 1:
                             _a.sent();
                             sharedStringsFile.resetCount();
@@ -1251,7 +1417,7 @@ define("entities/xlsx/files/sharedStringsFile", ["require", "exports", "entities
     }(xml_4.Xml));
     exports.SharedStringsFile = SharedStringsFile;
 });
-define("entities/xlsx/files/sheetFile", ["require", "exports", "entities/base/fileBase", "util/parser", "entities/base/node", "entities/base/attribute"], function (require, exports, fileBase_1, parser_4, node_6, attribute_6) {
+define("entities/xlsx/files/sheetFile", ["require", "exports", "entities/base/fileBase", "util/parser", "entities/base/node", "entities/base/attribute", "util/constants"], function (require, exports, fileBase_1, parser_4, node_6, attribute_6, constants_7) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var SheetFile = /** @class */ (function (_super) {
@@ -1262,48 +1428,8 @@ define("entities/xlsx/files/sheetFile", ["require", "exports", "entities/base/fi
          * @param name - Sheet Name. Reffered in workbook file.
          */
         function SheetFile(id, name, isLoad) {
-            var _this = _super.call(this, new node_6.Node("worksheet", [], true, "", "http://schemas.openxmlformats.org/spreadsheetml/2006/main"), "sheet" + id + ".xml", "workbook/sheets") || this;
-            _this.RootChildNodes = [
-                "sheetPr",
-                "dimension",
-                "sheetViews",
-                "sheetFormatPr",
-                "cols",
-                "sheetData",
-                "sheetCalcPr",
-                "sheetProtection",
-                "protectedRanges",
-                "scenarios",
-                "autoFilter",
-                "sortState",
-                "dataConsolidate",
-                "customSheetViews",
-                "mergeCells",
-                "phoneticPr",
-                "conditionalFormatting",
-                "dataValidations",
-                "hyperlinks",
-                "printOptions",
-                "pageMargins",
-                "pageSetup",
-                "headerFooter",
-                "rowBreaks",
-                "colBreaks",
-                "customProperties",
-                "cellWatches",
-                "ignoredErrors",
-                "smartTags",
-                "drawing",
-                "legacyDrawing",
-                "legacyDrawingHF",
-                "drawingHF",
-                "picture",
-                "oleObjects",
-                "controls",
-                "webPublishItems",
-                "tableParts",
-                "extLst"
-            ];
+            var _this = _super.call(this, new node_6.Node("worksheet", [], true, "", constants_7.Constants.Namespace.Workbook), constants_7.Constants.FileName.Worksheet + id + ".xml", constants_7.Constants.FilePath.Worksheet) || this;
+            _this.RootChildNodes = constants_7.Constants.RootChildNodes.Worksheet;
             if (!isLoad) {
                 _this.name = name;
                 // this.rId = rId;
@@ -1422,7 +1548,7 @@ define("entities/xlsx/files/sheetFile", ["require", "exports", "entities/base/fi
                     switch (_a.label) {
                         case 0:
                             sheetFile = new SheetFile(undefined, undefined, true);
-                            return [4 /*yield*/, parser_4.XmlParser.parse(content, sheetFile, "http://schemas.openxmlformats.org/spreadsheetml/2006/main")];
+                            return [4 /*yield*/, parser_4.XmlParser.parse(content, sheetFile, constants_7.Constants.Namespace.Workbook)];
                         case 1:
                             _a.sent();
                             sheetFile.fileName = fileName;
@@ -1473,7 +1599,7 @@ define("entities/xlsx/files/sheetFile", ["require", "exports", "entities/base/fi
     }(fileBase_1.FileBase));
     exports.SheetFile = SheetFile;
 });
-define("entities/xlsx/files/workbookFile", ["require", "exports", "entities/base/node", "entities/xlsx/files/sheetFile", "entities/base/attribute", "util/parser", "entities/base/fileBase"], function (require, exports, node_7, sheetFile_1, attribute_7, parser_5, fileBase_2) {
+define("entities/xlsx/files/workbookFile", ["require", "exports", "entities/base/node", "entities/xlsx/files/sheetFile", "entities/base/attribute", "util/parser", "entities/base/fileBase", "util/constants"], function (require, exports, node_7, sheetFile_1, attribute_7, parser_5, fileBase_2, constants_8) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -1488,30 +1614,10 @@ define("entities/xlsx/files/workbookFile", ["require", "exports", "entities/base
          * @param isLoad - The file
          */
         function WorkbookFile(eventBus, fileName, filePath, isLoad) {
-            var _this = _super.call(this, new node_7.Node("workbook", [], true, "", "http://schemas.openxmlformats.org/spreadsheetml/2006/main"), fileName || "workbook.xml", filePath || "workbook") || this;
-            _this.RootChildNodes = [
-                "bookViews",
-                "calcPr",
-                "customWorkbookViews",
-                "definedNames",
-                "externalReferences",
-                "extLst",
-                "fileRecoveryPr",
-                "fileSharing",
-                "fileVersion",
-                "functionGroups",
-                "oleSize",
-                "pivotCaches",
-                "sheets",
-                "smartTagPr",
-                "smartTagTypes",
-                "webPublishing",
-                "webPublishObjects",
-                "workbookPr",
-                "workbookProtection"
-            ];
+            var _this = _super.call(this, new node_7.Node("workbook", [], true, "", constants_8.Constants.Namespace.Workbook), fileName || constants_8.Constants.FileName.Workbook, filePath || constants_8.Constants.FilePath.Workbook) || this;
+            _this.RootChildNodes = constants_8.Constants.RootChildNodes.Workbook;
             if (!isLoad) {
-                _this.rootNode.addNamespace("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "r");
+                _this.rootNode.addNamespace(constants_8.Constants.Namespace.Relationships, "r");
                 _this.workbookViews = [];
                 _this.sheets = _this.addRootChild("sheets", _this.defaultNamespace).node;
                 _this.initializeView();
@@ -1573,7 +1679,7 @@ define("entities/xlsx/files/workbookFile", ["require", "exports", "entities/base
                     switch (_a.label) {
                         case 0:
                             workbookFile = new WorkbookFile(eventBus, fileName, filePath, true);
-                            return [4 /*yield*/, parser_5.XmlParser.parse(content, workbookFile, "http://schemas.openxmlformats.org/spreadsheetml/2006/main")];
+                            return [4 /*yield*/, parser_5.XmlParser.parse(content, workbookFile, constants_8.Constants.Namespace.Workbook)];
                         case 1:
                             _a.sent();
                             workbookFile.loadInternal();
@@ -1616,15 +1722,14 @@ define("entities/xlsx/files/workbookFile", ["require", "exports", "entities/base
         WorkbookFile.prototype.bindListeners = function (eventBus) {
             var _this = this;
             var self = this;
-            eventBus.startListening("setSheetRelationId", function (id, rId) {
+            eventBus.startListening(constants_8.Constants.Events.SetSheetRelationId, function (id, rId) {
                 var sheetNode = self.sheets.children.find(function (sheet) {
                     return sheet.attribute("sheetId", self.defaultNamespace).value ===
                         id.toString();
                 });
-                sheetNode.attribute(new attribute_7.Attribute("id", rId, true, _this.rootNode.namespaces["http://schemas.openxmlformats.org/officeDocument/2006/relationships"]));
+                sheetNode.attribute(new attribute_7.Attribute("id", rId, true, _this.rootNode.namespaces[constants_8.Constants.Namespace.Relationships]));
             });
-            eventBus.startListening("setSheetWorkbookView", function (sheetId, index, callback) {
-                console.log("setSheetWorkbookView triggered");
+            eventBus.startListening(constants_8.Constants.Events.SetSheetWorkbookView, function (sheetId, index, callback) {
                 if (index === undefined || index === null) {
                 }
             });
@@ -1653,7 +1758,7 @@ define("entities/xlsx/files/workbookFile", ["require", "exports", "entities/base
     }(fileBase_2.FileBase));
     exports.WorkbookFile = WorkbookFile;
 });
-define("util/util", ["require", "exports"], function (require, exports) {
+define("util/util", ["require", "exports", "util/constants"], function (require, exports, constants_9) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -1679,8 +1784,8 @@ define("util/util", ["require", "exports"], function (require, exports) {
          * @returns - True if passed value is valid cell
          */
         Util.isCellString = function (value) {
-            // Test values having atmost three characters and at most 7 digits starting with non zero
-            var isValid = /^[A-Z]{1,3}[1-9]\d{0,6}$/.test(value);
+            // Test values having atmost three characters and at most 7 digits starting with non zero    
+            var isValid = constants_9.Constants.Regex.ValidCellString.test(value);
             if (isValid) {
                 var _a = this.getCellColumnRow(value), column = _a.column, row = _a.row, columnNumber = _a.columnNumber;
                 isValid =
@@ -1709,8 +1814,8 @@ define("util/util", ["require", "exports"], function (require, exports) {
          * @returns - The column, row and columnNumber details of passed cell string
          */
         Util.getCellColumnRow = function (value) {
-            var column = value.match(/^[A-Z]{1,3}/)[0];
-            var row = parseInt(value.match(/\d{1,7}$/)[0], 10);
+            var column = value.match(constants_9.Constants.Regex.Column)[0];
+            var row = parseInt(value.match(constants_9.Constants.Regex.Row)[0], 10);
             var letter3 = (column.charCodeAt(2) || 64) - 64;
             var letter2 = (column.charCodeAt(1) || 64) - 64;
             var letter1 = (column.charCodeAt(0) || 64) - 64;
@@ -1749,7 +1854,7 @@ define("util/util", ["require", "exports"], function (require, exports) {
     }());
     exports.Util = Util;
 });
-define("app/xlsx/sheet", ["require", "exports"], function (require, exports) {
+define("app/xlsx/sheet", ["require", "exports", "util/constants"], function (require, exports, constants_10) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -1758,7 +1863,7 @@ define("app/xlsx/sheet", ["require", "exports"], function (require, exports) {
     var Sheet = /** @class */ (function () {
         function Sheet(sheetFile, eventBus, workbookFile) {
             var self = this;
-            eventBus.trigger("addFile", sheetFile);
+            eventBus.trigger(constants_10.Constants.Events.AddFile, sheetFile);
             this.defineNameProperty(sheetFile, workbookFile);
             /**
              * Configure Sheet Properties
@@ -1825,7 +1930,7 @@ define("app/xlsx/sheet", ["require", "exports"], function (require, exports) {
     }());
     exports.Sheet = Sheet;
 });
-define("app/xlsx/sheet.builder", ["require", "exports", "app/xlsx/sheet", "entities/xlsx/files/sheetFile"], function (require, exports, sheet_1, sheetFile_2) {
+define("app/xlsx/sheet.builder", ["require", "exports", "app/xlsx/sheet", "entities/xlsx/files/sheetFile", "util/constants"], function (require, exports, sheet_1, sheetFile_2, constants_11) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var SheetBuilder = /** @class */ (function () {
@@ -1834,20 +1939,22 @@ define("app/xlsx/sheet.builder", ["require", "exports", "app/xlsx/sheet", "entit
         SheetBuilder.default = function (workbookFile, eventBus, name) {
             var sheetFile = workbookFile.createSheet(name);
             var completeFilePath = "/" + sheetFile.filePath + "/" + sheetFile.fileName, relPath = "sheets/" + sheetFile.fileName;
-            eventBus.trigger("addContentType", "Override", "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml", completeFilePath);
-            eventBus.trigger("addWorkbookRelation", relPath, "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet", function (rId) {
-                eventBus.trigger("setSheetRelationId", sheetFile.id, rId);
+            eventBus.trigger(constants_11.Constants.Events.AddContentType, "Override", constants_11.Constants.ContentTypes.Worksheet, completeFilePath);
+            eventBus.trigger(constants_11.Constants.Events.AddWorkbookRelation, relPath, constants_11.Constants.Relationships.Worksheet, function (rId) {
+                eventBus.trigger(constants_11.Constants.Events.SetSheetRelationId, sheetFile.id, rId);
             });
             var sheet = new sheet_1.Sheet(sheetFile, eventBus, workbookFile);
-            eventBus.trigger("setSheetWorkbookView", sheetFile.id);
+            eventBus.trigger(constants_11.Constants.Events.SetSheetWorkbookView, sheetFile.id);
             return sheet;
         };
-        SheetBuilder.create = function (content, eventBus, workbookFile, fileName, filePath, id, name) {
+        SheetBuilder.create = function (file, eventBus, workbookFile, id, name) {
             return __awaiter(this, void 0, void 0, function () {
                 var sheetFile;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
-                        case 0: return [4 /*yield*/, sheetFile_2.SheetFile.load(content, fileName, filePath, id, name)];
+                        case 0:
+                            file.processed = true;
+                            return [4 /*yield*/, sheetFile_2.SheetFile.load(file.fileContent, file.fileName, file.filePath, id, name)];
                         case 1:
                             sheetFile = _a.sent();
                             return [2 /*return*/, new sheet_1.Sheet(sheetFile, eventBus, workbookFile)];
@@ -1859,7 +1966,7 @@ define("app/xlsx/sheet.builder", ["require", "exports", "app/xlsx/sheet", "entit
     }());
     exports.SheetBuilder = SheetBuilder;
 });
-define("app/xlsx/workbook.util", ["require", "exports", "entities/xlsx/files/sharedStringsFile", "app/xlsx/sheet.builder"], function (require, exports, sharedStringsFile_1, sheet_builder_1) {
+define("app/xlsx/workbook.util", ["require", "exports", "entities/xlsx/files/sharedStringsFile", "app/xlsx/sheet.builder", "util/constants"], function (require, exports, sharedStringsFile_1, sheet_builder_1, constants_12) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -1889,9 +1996,9 @@ define("app/xlsx/workbook.util", ["require", "exports", "entities/xlsx/files/sha
             this.sharedString = function (value) {
                 if (!sharedStringFile) {
                     sharedStringFile = new sharedStringsFile_1.SharedStringsFile();
-                    eventBus.trigger("addFile", sharedStringFile);
-                    relations.addRelationship("sharedstrings.xml", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings");
-                    eventBus.trigger("addContentType", "Override", "application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml", "/workbook/sharedstrings.xml");
+                    eventBus.trigger(constants_12.Constants.Events.AddFile, sharedStringFile);
+                    relations.addRelationship("sharedstrings.xml", constants_12.Constants.Relationships.SharedString);
+                    eventBus.trigger(constants_12.Constants.Events.AddContentType, "Override", constants_12.Constants.ContentTypes.SharedString, "/workbook/sharedstrings.xml");
                 }
                 if (typeof value === "string") {
                     sharedStringFile.addCount();
@@ -1913,7 +2020,7 @@ define("app/xlsx/workbook.util", ["require", "exports", "entities/xlsx/files/sha
          */
         WorkbookUtility.prototype.bindListeners = function (workbook, relations, eventBus) {
             var _this = this;
-            eventBus.startListening("addWorkbookRelation", function (target, type, callback) {
+            eventBus.startListening(constants_12.Constants.Events.AddWorkbookRelation, function (target, type, callback) {
                 var rId = relations.addRelationship(target, type);
                 if (callback) {
                     callback(rId);
@@ -1922,7 +2029,7 @@ define("app/xlsx/workbook.util", ["require", "exports", "entities/xlsx/files/sha
             // eventBus.startListening("activateTab", (tabNumber: number) => {
             //   workbook.activeTab.value = tabNumber.toString(10);
             // });
-            eventBus.startListening("sharedString", function (value, callback) {
+            eventBus.startListening(constants_12.Constants.Events.SharedString, function (value, callback) {
                 var sharedStringIndex = _this.sharedString(value);
                 if (callback) {
                     callback(sharedStringIndex);
@@ -1933,7 +2040,7 @@ define("app/xlsx/workbook.util", ["require", "exports", "entities/xlsx/files/sha
     }());
     exports.WorkbookUtility = WorkbookUtility;
 });
-define("app/xlsx/workbook.util.builder", ["require", "exports", "entities/xlsx/files/workbookFile", "entities/files/relationships", "entities/xlsx/files/sharedStringsFile", "app/xlsx/workbook.util", "util/fileHandler"], function (require, exports, workbookFile_1, relationships_1, sharedStringsFile_2, workbook_util_1, fileHandler_1) {
+define("app/xlsx/workbook.util.builder", ["require", "exports", "entities/xlsx/files/workbookFile", "entities/files/relationships", "entities/xlsx/files/sharedStringsFile", "app/xlsx/workbook.util", "util/fileHandler", "app/xlsx/sheet.builder", "util/constants"], function (require, exports, workbookFile_1, relationships_1, sharedStringsFile_2, workbook_util_1, fileHandler_1, sheet_builder_2, constants_13) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -1951,10 +2058,10 @@ define("app/xlsx/workbook.util.builder", ["require", "exports", "entities/xlsx/f
             var relations;
             var sharedStringFile;
             workbook = new workbookFile_1.WorkbookFile(eventBus);
-            eventBus.trigger("addContentType", "Override", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml", "/workbook/workbook.xml");
-            eventBus.trigger("addFile", workbook);
+            eventBus.trigger(constants_13.Constants.Events.AddContentType, "Override", constants_13.Constants.ContentTypes.Workbook, "/workbook/workbook.xml");
+            eventBus.trigger(constants_13.Constants.Events.AddFile, workbook);
             relations = new relationships_1.Relationships("workbook.xml.rels", "workbook/_rels");
-            eventBus.trigger("addFile", relations);
+            eventBus.trigger(constants_13.Constants.Events.AddFile, relations);
             var workbookUtility = new workbook_util_1.WorkbookUtility(eventBus, workbook, relations, sharedStringFile);
             return workbookUtility;
         };
@@ -1966,55 +2073,101 @@ define("app/xlsx/workbook.util.builder", ["require", "exports", "entities/xlsx/f
          */
         WorkbookUtilityBuilder.create = function (eventBus, files, contentTypes) {
             return __awaiter(this, void 0, void 0, function () {
-                var workbookContentType, workbookFile, relationsFile, relation, sharedStringRel, saredStrings, sharedStringRelValue_1, sharedStringFile, workbookFileXml, workbookUtility;
+                var workbookFileAdapter, relationshipFile, saredStringsFile, workbookFile, workbookUtility;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
-                            workbookContentType = contentTypes.overrides["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"];
-                            if (workbookContentType.startsWith("/")) {
-                                workbookContentType = workbookContentType.substring(1);
-                            }
-                            workbookFile = files.find(function (fl) { return fl.completeName === workbookContentType; });
-                            relationsFile = fileHandler_1.FileAdapter.getRelationshipFile(workbookFile.filePath, files, contentTypes.defaults["application/vnd.openxmlformats-package.relationships+xml"]);
+                            workbookFileAdapter = this.getWorkbookFileAdapter(contentTypes, files);
+                            return [4 /*yield*/, this.loadRelationshipsFile(workbookFileAdapter, files, contentTypes, eventBus)];
+                        case 1:
+                            relationshipFile = _a.sent();
+                            return [4 /*yield*/, this.loadSharedStringsFile(relationshipFile, files, workbookFileAdapter)];
+                        case 2:
+                            saredStringsFile = _a.sent();
+                            return [4 /*yield*/, workbookFile_1.WorkbookFile.load(eventBus, workbookFileAdapter.fileContent, workbookFileAdapter.fileName, workbookFileAdapter.filePath)];
+                        case 3:
+                            workbookFile = _a.sent();
+                            eventBus.trigger(constants_13.Constants.Events.AddFile, workbookFile);
+                            return [4 /*yield*/, this.loadSheets(workbookFile, workbookFileAdapter, relationshipFile, files, eventBus)];
+                        case 4:
+                            _a.sent();
+                            workbookUtility = new workbook_util_1.WorkbookUtility(eventBus, workbookFile, relationshipFile, saredStringsFile);
+                            return [2 /*return*/, workbookUtility];
+                    }
+                });
+            });
+        };
+        WorkbookUtilityBuilder.getWorkbookFileAdapter = function (contentTypes, files) {
+            var workbookContentType = contentTypes.overrides[constants_13.Constants.ContentTypes.Workbook];
+            if (workbookContentType.startsWith("/")) {
+                workbookContentType = workbookContentType.substring(1);
+            }
+            var workbookFile = files.find(function (fl) { return fl.completeName === workbookContentType; });
+            return workbookFile;
+        };
+        WorkbookUtilityBuilder.loadRelationshipsFile = function (workbookFile, files, contentTypes, eventBus) {
+            return __awaiter(this, void 0, void 0, function () {
+                var relationsFile, relation;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            relationsFile = fileHandler_1.FileAdapter.getRelationshipFile(workbookFile.filePath, files, contentTypes.defaults[constants_13.Constants.ContentTypes.Relationship]);
                             if (!!relationsFile.processed) return [3 /*break*/, 2];
                             return [4 /*yield*/, relationships_1.Relationships.load(relationsFile.fileContent, relationsFile.fileNameWithExtention, relationsFile.filePath)];
                         case 1:
                             relation = _a.sent();
-                            eventBus.trigger("addFile", relation);
+                            eventBus.trigger(constants_13.Constants.Events.AddFile, relation);
                             relationsFile.processed = true;
                             relationsFile.xmlFile = relation;
                             _a.label = 2;
-                        case 2:
-                            sharedStringRel = relation.getByRelationship("http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings");
-                            if (!sharedStringRel) return [3 /*break*/, 4];
+                        case 2: return [2 /*return*/, relation];
+                    }
+                });
+            });
+        };
+        WorkbookUtilityBuilder.loadSharedStringsFile = function (relation, files, workbookFile) {
+            return __awaiter(this, void 0, void 0, function () {
+                var sharedStringRel, saredStrings, sharedStringRelValue_1, sharedStringFile;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            sharedStringRel = relation.getByRelationship(constants_13.Constants.Relationships.SharedString);
+                            if (!sharedStringRel) return [3 /*break*/, 2];
                             sharedStringRelValue_1 = sharedStringRel.attribute("Target", relation.defaultNamespace).value;
                             sharedStringFile = files.find(function (fl) {
                                 return fl.filePath ===
                                     workbookFile.filePath +
                                         sharedStringRelValue_1.substring(0, sharedStringRelValue_1.lastIndexOf("/"));
                             });
-                            if (!!sharedStringFile.processed) return [3 /*break*/, 4];
+                            if (!!sharedStringFile.processed) return [3 /*break*/, 2];
                             return [4 /*yield*/, sharedStringsFile_2.SharedStringsFile.load(sharedStringFile.fileContent, sharedStringFile.fileName, sharedStringFile.filePath)];
-                        case 3:
+                        case 1:
                             saredStrings = _a.sent();
-                            _a.label = 4;
-                        case 4: return [4 /*yield*/, workbookFile_1.WorkbookFile.load(eventBus, workbookFile.fileContent, workbookFile.fileName, workbookFile.filePath)];
-                        case 5:
-                            workbookFileXml = _a.sent();
-                            eventBus.trigger("addFile", workbookFileXml);
-                            workbookFileXml.sheets.children.forEach(function (sheetNode) {
-                                var rId = sheetNode.getAttribute("r:Id").value;
-                                var relationNode = relation.getById(rId);
-                                var filePath = relationNode.attribute("Target", relation.defaultNamespace).value;
-                                // const file = files.find(
-                                //   f => f.filePath + "/" + f.fileNameWithExtention === filePath
-                                // );
-                                // if (!file.processed) {
-                                // }
-                            });
-                            workbookUtility = new workbook_util_1.WorkbookUtility(eventBus, workbookFileXml, relation, saredStrings);
-                            return [2 /*return*/, workbookUtility];
+                            _a.label = 2;
+                        case 2: return [2 /*return*/, saredStrings];
                     }
+                });
+            });
+        };
+        WorkbookUtilityBuilder.loadSheets = function (workbookFileXml, workbookFile, relation, files, eventBus) {
+            return __awaiter(this, void 0, void 0, function () {
+                var relationshipNamespace;
+                return __generator(this, function (_a) {
+                    relationshipNamespace = workbookFileXml.sheets.getNamespacePrefix(constants_13.Constants.Namespace.Relationships);
+                    workbookFileXml.sheets.children.forEach(function (sheetNode) {
+                        var rId = sheetNode.attribute("Id", relationshipNamespace).value;
+                        var relationNode = relation.getById(rId);
+                        var sheetId = sheetNode.attribute("sheetId", workbookFileXml.defaultNamespace).value;
+                        var sheetName = sheetNode.attribute("name", workbookFileXml.defaultNamespace).value;
+                        var filePath = workbookFile.filePath +
+                            "/" +
+                            relationNode.attribute("Target", relation.defaultNamespace).value;
+                        var file = files.find(function (f) { return f.filePath + "/" + f.fileNameWithExtention === filePath; });
+                        if (!file.processed) {
+                            sheet_builder_2.SheetBuilder.create(file, eventBus, workbookFileXml, parseInt(sheetId), sheetName);
+                        }
+                    });
+                    return [2 /*return*/];
                 });
             });
         };
@@ -2022,7 +2175,7 @@ define("app/xlsx/workbook.util.builder", ["require", "exports", "entities/xlsx/f
     }());
     exports.WorkbookUtilityBuilder = WorkbookUtilityBuilder;
 });
-define("app/xlsx/xlsx.util.builder", ["require", "exports", "entities/files/contentTypes", "util/fileHandler", "util/eventBus", "entities/files/relationships", "app/xlsx/xlsx.util", "app/xlsx/workbook.util.builder"], function (require, exports, contentTypes_1, fileHandler_2, eventBus_1, relationships_2, xlsx_util_1, workbook_util_builder_1) {
+define("app/xlsx/xlsx.util.builder", ["require", "exports", "entities/files/contentTypes", "util/fileHandler", "util/eventBus", "entities/files/relationships", "app/xlsx/xlsx.util", "app/xlsx/workbook.util.builder", "util/constants"], function (require, exports, contentTypes_1, fileHandler_2, eventBus_1, relationships_2, xlsx_util_1, workbook_util_builder_1, constants_14) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var XlsxBuilder = /** @class */ (function () {
@@ -2072,12 +2225,12 @@ define("app/xlsx/xlsx.util.builder", ["require", "exports", "entities/files/cont
                             _contentTypes = _a.sent();
                             contentTypes = _contentTypes;
                             self.bindListeners(files, eventBus);
-                            return [4 /*yield*/, workbook_util_builder_1.WorkbookUtilityBuilder.create(eventBus, fileAdapters, _contentTypes)];
-                        case 4:
-                            workbookUtility = _a.sent();
                             return [4 /*yield*/, self.loadRelationships(fileAdapters, files, contentTypes)];
-                        case 5:
+                        case 4:
                             _a.sent();
+                            return [4 /*yield*/, workbook_util_builder_1.WorkbookUtilityBuilder.create(eventBus, fileAdapters, _contentTypes)];
+                        case 5:
+                            workbookUtility = _a.sent();
                             xlsx = new xlsx_util_1.Xlsx(fileName, files, workbookUtility);
                             if (callback) {
                                 callback(xlsx);
@@ -2100,7 +2253,7 @@ define("app/xlsx/xlsx.util.builder", ["require", "exports", "entities/files/cont
         XlsxBuilder.initContentTypes = function (files, eventBus) {
             var contentTypes = new contentTypes_1.ContentTypes(eventBus);
             files.push(contentTypes);
-            contentTypes.addDefault("application/vnd.openxmlformats-package.relationships+xml", "rels");
+            contentTypes.addDefault(constants_14.Constants.ContentTypes.Relationship, "rels");
             contentTypes.addDefault("application/xml", "xml");
             return contentTypes;
         };
@@ -2108,8 +2261,8 @@ define("app/xlsx/xlsx.util.builder", ["require", "exports", "entities/files/cont
          * Bind Event Listeners on Bus
          */
         XlsxBuilder.bindListeners = function (files, eventBus) {
-            eventBus.stopListening("addFile");
-            eventBus.startListening("addFile", function (file) {
+            eventBus.stopListening(constants_14.Constants.Events.AddFile);
+            eventBus.startListening(constants_14.Constants.Events.AddFile, function (file) {
                 files.push(file);
             });
         };
@@ -2117,10 +2270,9 @@ define("app/xlsx/xlsx.util.builder", ["require", "exports", "entities/files/cont
          * Initialize relationships
          */
         XlsxBuilder.initRels = function (files, contentTypes) {
-            var relationships = new relationships_2.Relationships("." +
-                contentTypes.defaults["application/vnd.openxmlformats-package.relationships+xml"]);
+            var relationships = new relationships_2.Relationships("." + contentTypes.defaults[constants_14.Constants.ContentTypes.Relationship]);
             files.push(relationships);
-            relationships.addRelationship(contentTypes.overrides["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"].replace(/^[\/]+|[\/]+$/g, ""), "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument");
+            relationships.addRelationship(contentTypes.overrides[constants_14.Constants.ContentTypes.Workbook].replace(/^[\/]+|[\/]+$/g, ""), constants_14.Constants.Relationships.Workbook);
             return relationships;
         };
         XlsxBuilder.loadContentTypes = function (files, xmls, eventBus) {
@@ -2145,7 +2297,7 @@ define("app/xlsx/xlsx.util.builder", ["require", "exports", "entities/files/cont
                 return __generator(this, function (_a) {
                     switch (_a.label) {
                         case 0:
-                            relExtention = contentTypes.defaults["application/vnd.openxmlformats-package.relationships+xml"];
+                            relExtention = contentTypes.defaults[constants_14.Constants.ContentTypes.Relationship];
                             relationsFile = files.find(function (file) { return file.completeName === "_rels/." + relExtention; });
                             return [4 /*yield*/, relationships_2.Relationships.load(relationsFile.fileContent, relationsFile.fileNameWithExtention, relationsFile.filePath)];
                         case 1:

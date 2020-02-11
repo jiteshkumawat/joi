@@ -42,6 +42,7 @@ var eventBus_1 = require("../../util/eventBus");
 var relationships_1 = require("../../entities/files/relationships");
 var xlsx_util_1 = require("./xlsx.util");
 var workbook_util_builder_1 = require("./workbook.util.builder");
+var constants_1 = require("../../util/constants");
 var XlsxBuilder = /** @class */ (function () {
     function XlsxBuilder() {
     }
@@ -89,12 +90,12 @@ var XlsxBuilder = /** @class */ (function () {
                         _contentTypes = _a.sent();
                         contentTypes = _contentTypes;
                         self.bindListeners(files, eventBus);
-                        return [4 /*yield*/, workbook_util_builder_1.WorkbookUtilityBuilder.create(eventBus, fileAdapters, _contentTypes)];
-                    case 4:
-                        workbookUtility = _a.sent();
                         return [4 /*yield*/, self.loadRelationships(fileAdapters, files, contentTypes)];
-                    case 5:
+                    case 4:
                         _a.sent();
+                        return [4 /*yield*/, workbook_util_builder_1.WorkbookUtilityBuilder.create(eventBus, fileAdapters, _contentTypes)];
+                    case 5:
+                        workbookUtility = _a.sent();
                         xlsx = new xlsx_util_1.Xlsx(fileName, files, workbookUtility);
                         if (callback) {
                             callback(xlsx);
@@ -117,7 +118,7 @@ var XlsxBuilder = /** @class */ (function () {
     XlsxBuilder.initContentTypes = function (files, eventBus) {
         var contentTypes = new contentTypes_1.ContentTypes(eventBus);
         files.push(contentTypes);
-        contentTypes.addDefault("application/vnd.openxmlformats-package.relationships+xml", "rels");
+        contentTypes.addDefault(constants_1.Constants.ContentTypes.Relationship, "rels");
         contentTypes.addDefault("application/xml", "xml");
         return contentTypes;
     };
@@ -125,8 +126,8 @@ var XlsxBuilder = /** @class */ (function () {
      * Bind Event Listeners on Bus
      */
     XlsxBuilder.bindListeners = function (files, eventBus) {
-        eventBus.stopListening("addFile");
-        eventBus.startListening("addFile", function (file) {
+        eventBus.stopListening(constants_1.Constants.Events.AddFile);
+        eventBus.startListening(constants_1.Constants.Events.AddFile, function (file) {
             files.push(file);
         });
     };
@@ -134,10 +135,9 @@ var XlsxBuilder = /** @class */ (function () {
      * Initialize relationships
      */
     XlsxBuilder.initRels = function (files, contentTypes) {
-        var relationships = new relationships_1.Relationships("." +
-            contentTypes.defaults["application/vnd.openxmlformats-package.relationships+xml"]);
+        var relationships = new relationships_1.Relationships("." + contentTypes.defaults[constants_1.Constants.ContentTypes.Relationship]);
         files.push(relationships);
-        relationships.addRelationship(contentTypes.overrides["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"].replace(/^[\/]+|[\/]+$/g, ""), "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument");
+        relationships.addRelationship(contentTypes.overrides[constants_1.Constants.ContentTypes.Workbook].replace(/^[\/]+|[\/]+$/g, ""), constants_1.Constants.Relationships.Workbook);
         return relationships;
     };
     XlsxBuilder.loadContentTypes = function (files, xmls, eventBus) {
@@ -162,7 +162,7 @@ var XlsxBuilder = /** @class */ (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        relExtention = contentTypes.defaults["application/vnd.openxmlformats-package.relationships+xml"];
+                        relExtention = contentTypes.defaults[constants_1.Constants.ContentTypes.Relationship];
                         relationsFile = files.find(function (file) { return file.completeName === "_rels/." + relExtention; });
                         return [4 /*yield*/, relationships_1.Relationships.load(relationsFile.fileContent, relationsFile.fileNameWithExtention, relationsFile.filePath)];
                     case 1:

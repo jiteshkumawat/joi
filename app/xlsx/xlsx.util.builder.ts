@@ -6,6 +6,7 @@ import { WorkbookUtility } from "./workbook.util";
 import { Relationships } from "../../entities/files/relationships";
 import { Xlsx } from "./xlsx.util";
 import { WorkbookUtilityBuilder } from "./workbook.util.builder";
+import { Constants } from "../../util/constants";
 
 export class XlsxBuilder {
   /**
@@ -52,9 +53,9 @@ export class XlsxBuilder {
     const _contentTypes = await self.loadContentTypes(fileAdapters, files, eventBus);
     contentTypes = _contentTypes;
     self.bindListeners(files, eventBus);
-    workbookUtility = await WorkbookUtilityBuilder.create(eventBus, fileAdapters, _contentTypes);
     await self.loadRelationships(fileAdapters, files, contentTypes);
-
+    workbookUtility = await WorkbookUtilityBuilder.create(eventBus, fileAdapters, _contentTypes);
+    
     var xlsx = new Xlsx(fileName, files, workbookUtility);
     if (callback) {
       callback(xlsx);
@@ -77,7 +78,7 @@ export class XlsxBuilder {
     let contentTypes = new ContentTypes(eventBus);
     files.push(contentTypes);
     contentTypes.addDefault(
-      "application/vnd.openxmlformats-package.relationships+xml",
+      Constants.ContentTypes.Relationship,
       "rels"
     );
     contentTypes.addDefault("application/xml", "xml");
@@ -91,8 +92,8 @@ export class XlsxBuilder {
     files: Xml[],
     eventBus: EventBus
   ) {
-    eventBus.stopListening("addFile");
-    eventBus.startListening("addFile", (file: Xml) => {
+    eventBus.stopListening(Constants.Events.AddFile);
+    eventBus.startListening(Constants.Events.AddFile, (file: Xml) => {
       files.push(file);
     });
   }
@@ -101,18 +102,11 @@ export class XlsxBuilder {
    * Initialize relationships
    */
   private static initRels(files: Xml[], contentTypes: ContentTypes) {
-    let relationships = new Relationships(
-      "." +
-        contentTypes.defaults[
-          "application/vnd.openxmlformats-package.relationships+xml"
-        ]
-    );
+    let relationships = new Relationships("." + contentTypes.defaults[Constants.ContentTypes.Relationship]);
     files.push(relationships);
     relationships.addRelationship(
-      contentTypes.overrides[
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"
-      ].replace(/^[\/]+|[\/]+$/g, ""),
-      "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument"
+      contentTypes.overrides[Constants.ContentTypes.Workbook].replace(/^[\/]+|[\/]+$/g, ""),
+      Constants.Relationships.Workbook
     );
 
     return relationships;
@@ -137,9 +131,7 @@ export class XlsxBuilder {
     contentTypes: ContentTypes
   ): Promise<Relationships> {
     let relExtention =
-      contentTypes.defaults[
-        "application/vnd.openxmlformats-package.relationships+xml"
-      ];
+      contentTypes.defaults[Constants.ContentTypes.Relationship];
     const relationsFile = files.find(
       file => file.completeName === "_rels/." + relExtention
     );

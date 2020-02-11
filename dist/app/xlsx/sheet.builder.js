@@ -38,26 +38,29 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var sheet_1 = require("./sheet");
 var sheetFile_1 = require("../../entities/xlsx/files/sheetFile");
+var constants_1 = require("../../util/constants");
 var SheetBuilder = /** @class */ (function () {
     function SheetBuilder() {
     }
     SheetBuilder.default = function (workbookFile, eventBus, name) {
         var sheetFile = workbookFile.createSheet(name);
         var completeFilePath = "/" + sheetFile.filePath + "/" + sheetFile.fileName, relPath = "sheets/" + sheetFile.fileName;
-        eventBus.trigger("addContentType", "Override", "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml", completeFilePath);
-        eventBus.trigger("addWorkbookRelation", relPath, "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet", function (rId) {
-            eventBus.trigger("setSheetRelationId", sheetFile.id, rId);
+        eventBus.trigger(constants_1.Constants.Events.AddContentType, "Override", constants_1.Constants.ContentTypes.Worksheet, completeFilePath);
+        eventBus.trigger(constants_1.Constants.Events.AddWorkbookRelation, relPath, constants_1.Constants.Relationships.Worksheet, function (rId) {
+            eventBus.trigger(constants_1.Constants.Events.SetSheetRelationId, sheetFile.id, rId);
         });
         var sheet = new sheet_1.Sheet(sheetFile, eventBus, workbookFile);
-        eventBus.trigger("setSheetWorkbookView", sheetFile.id);
+        eventBus.trigger(constants_1.Constants.Events.SetSheetWorkbookView, sheetFile.id);
         return sheet;
     };
-    SheetBuilder.create = function (content, eventBus, workbookFile, fileName, filePath, id, name) {
+    SheetBuilder.create = function (file, eventBus, workbookFile, id, name) {
         return __awaiter(this, void 0, void 0, function () {
             var sheetFile;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, sheetFile_1.SheetFile.load(content, fileName, filePath, id, name)];
+                    case 0:
+                        file.processed = true;
+                        return [4 /*yield*/, sheetFile_1.SheetFile.load(file.fileContent, file.fileName, file.filePath, id, name)];
                     case 1:
                         sheetFile = _a.sent();
                         return [2 /*return*/, new sheet_1.Sheet(sheetFile, eventBus, workbookFile)];

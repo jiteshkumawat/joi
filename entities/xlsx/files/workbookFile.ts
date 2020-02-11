@@ -4,6 +4,7 @@ import { Attribute } from "../../base/attribute";
 import { XmlParser } from "../../../util/parser";
 import { EventBus } from "../../../util/eventBus";
 import { FileBase } from "../../base/fileBase";
+import { Constants } from "../../../util/constants";
 
 /**
  * Define new workbook file
@@ -27,37 +28,17 @@ export class WorkbookFile extends FileBase {
         [],
         true,
         "",
-        "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+        Constants.Namespace.Workbook
       ),
-      fileName || "workbook.xml",
-      filePath || "workbook"
+      fileName || Constants.FileName.Workbook,
+      filePath || Constants.FilePath.Workbook
     );
 
-    this.RootChildNodes = [
-      "bookViews",
-      "calcPr",
-      "customWorkbookViews",
-      "definedNames",
-      "externalReferences",
-      "extLst",
-      "fileRecoveryPr",
-      "fileSharing",
-      "fileVersion",
-      "functionGroups",
-      "oleSize",
-      "pivotCaches",
-      "sheets",
-      "smartTagPr",
-      "smartTagTypes",
-      "webPublishing",
-      "webPublishObjects",
-      "workbookPr",
-      "workbookProtection"
-    ];
+    this.RootChildNodes = Constants.RootChildNodes.Workbook;
 
     if (!isLoad) {
       this.rootNode.addNamespace(
-        "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
+        Constants.Namespace.Relationships,
         "r"
       );
 
@@ -156,7 +137,7 @@ export class WorkbookFile extends FileBase {
     await XmlParser.parse(
       content,
       workbookFile,
-      "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+      Constants.Namespace.Workbook
     );
     workbookFile.loadInternal();
     workbookFile.bindListeners(eventBus);
@@ -200,7 +181,7 @@ export class WorkbookFile extends FileBase {
    */
   private bindListeners(eventBus: EventBus) {
     var self = this;
-    eventBus.startListening("setSheetRelationId", (id: number, rId: string) => {
+    eventBus.startListening(Constants.Events.SetSheetRelationId, (id: number, rId: string) => {
       var sheetNode = self.sheets.children.find(
         sheet =>
           sheet.attribute("sheetId", self.defaultNamespace).value ===
@@ -211,17 +192,14 @@ export class WorkbookFile extends FileBase {
           "id",
           rId,
           true,
-          this.rootNode.namespaces[
-            "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
-          ]
+          this.rootNode.namespaces[Constants.Namespace.Relationships]
         )
       );
     });
 
     eventBus.startListening(
-      "setSheetWorkbookView",
+      Constants.Events.SetSheetWorkbookView,
       (sheetId: Number, index?: Number, callback?: Function) => {
-        console.log("setSheetWorkbookView triggered");
         if (index === undefined || index === null) {
         }
       }

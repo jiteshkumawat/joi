@@ -4,6 +4,7 @@ import { Relationships } from "../../entities/files/relationships";
 import { SharedStringsFile } from "../../entities/xlsx/files/sharedStringsFile";
 import { SheetBuilder } from "./sheet.builder";
 import { Sheet } from "./sheet";
+import { Constants } from "../../util/constants";
 
 /**
  * Utility class for workbook
@@ -41,15 +42,15 @@ export class WorkbookUtility {
     ): { index: number; value: string } => {
       if (!sharedStringFile) {
         sharedStringFile = new SharedStringsFile();
-        eventBus.trigger("addFile", sharedStringFile);
+        eventBus.trigger(Constants.Events.AddFile, sharedStringFile);
         relations.addRelationship(
           "sharedstrings.xml",
-          "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings"
+          Constants.Relationships.SharedString
         );
         eventBus.trigger(
-          "addContentType",
+          Constants.Events.AddContentType,
           "Override",
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml",
+          Constants.ContentTypes.SharedString,
           "/workbook/sharedstrings.xml"
         );
       }
@@ -95,7 +96,7 @@ export class WorkbookUtility {
     eventBus: EventBus
   ) {
     eventBus.startListening(
-      "addWorkbookRelation",
+      Constants.Events.AddWorkbookRelation,
       (target: string, type: string, callback: Function) => {
         let rId = relations.addRelationship(target, type);
         if (callback) {
@@ -109,7 +110,7 @@ export class WorkbookUtility {
     // });
 
     eventBus.startListening(
-      "sharedString",
+      Constants.Events.SharedString,
       (value: string | number, callback?: Function) => {
         const sharedStringIndex = this.sharedString(value);
         if (callback) {

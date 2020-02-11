@@ -1,4 +1,5 @@
 import { Attribute } from "./attribute";
+import { Constants } from "../../util/constants";
 
 /**
  * Xml Node
@@ -14,13 +15,13 @@ export class Node {
     public attributes: Attribute[] = [],
     public isActive: boolean = true,
     public namespace: string = "",
-    public xmlns: string = ""
+    xmlns: string = ""
   ) {
-    this.children = [];
+    this._children = [];
     this.namespaces = {};
     if (xmlns) {
       this.namespaces[xmlns] = "";
-      let namespaceAttr = new Attribute("xmlns", xmlns);
+      let namespaceAttr = new Attribute(Constants.Common.Xmlns, xmlns);
       this.attributes.push(namespaceAttr);
     }
   }
@@ -30,10 +31,16 @@ export class Node {
    */
   public namespaces: any;
 
+  private parent: Node;
+
+  private _children: Node[];
+
   /**
    * The child nodes collection
    */
-  public children: Node[];
+  public get children(): Node[] {
+    return this._children;
+  }
 
   /**
    * The value of xml node
@@ -49,22 +56,42 @@ export class Node {
   public addNamespace(namespace: string, prefix?: string): Attribute {
     this.namespaces[namespace] = prefix;
     prefix = prefix ? ":" + prefix : "";
-    let namespaceAttr = new Attribute("xmlns" + prefix, namespace);
+    let namespaceAttr = new Attribute(
+      Constants.Common.Xmlns + prefix,
+      namespace
+    );
     this.addAttribute(namespaceAttr);
     return namespaceAttr;
+  }
+
+  /**
+   * Get namespace prefix which can be used
+   * @param namespace - The namespace string
+   */
+  public getNamespacePrefix(namespace: string): string {
+    if (this.namespaces && this.namespaces[namespace]) {
+      return this.namespaces[namespace];
+    }
+
+    if (this.parent) {
+      return this.parent.getNamespacePrefix(namespace);
+    }
+
+    return null;
   }
 
   /**
    * Gets or adds a child of node
    * @param {Node | string} node - The node or node name to get or add. Use string value to search child and node value to append.
    * @param {string} namespace - The namespace of node
+   * @param {number} index - The child index
    * @returns {Node} - The child node
    */
-  public child(node: string | Node, namespace?: string): Node {
+  public child(node: string | Node, namespace?: string, index?: number): Node {
     if (typeof node === "string") {
       return this.getChild(namespace ? namespace + ":" + node : node);
     } else {
-      return this.addChild(node);
+      return this.addChild(node, index);
     }
   }
 
@@ -99,7 +126,7 @@ export class Node {
     if (
       typeof attribute === "string" &&
       attribute.indexOf(":") > 0 &&
-      !attribute.startsWith("xmlns:")
+      !attribute.startsWith(Constants.Common.Xmlns + ":")
     ) {
       let attrValues = attribute.split(":");
       attrName = attrValues[1];
@@ -136,7 +163,7 @@ export class Node {
       childString = "",
       xmlns = "";
     this.attributes.forEach(attribute => {
-      if (attribute.name.startsWith("xmlns")) {
+      if (attribute.name.startsWith(Constants.Common.Xmlns)) {
         xmlns = xmlns + " " + attribute.toString();
       } else {
         attributes = attributes + " " + attribute.toString();
@@ -177,6 +204,20 @@ export class Node {
     }
   }
 
+  /**
+   * Convert Node to JSON
+   */
+  public toJSON(): any {
+    return {
+      name: this.name,
+      attributes: this.attributes,
+      isActive: this.isActive,
+      namespace: this.namespace,
+      namespaces: this.namespaces,
+      children: this._children
+    };
+  }
+
   private addAttribute(attribute: Attribute): Attribute {
     let savedAttr = this.getAttribute(attribute);
     if (savedAttr) {
@@ -187,8 +228,13 @@ export class Node {
     return attribute;
   }
 
-  private addChild(node: Node): Node {
-    this.children.push(node);
+  private addChild(node: Node, index?: number): Node {
+    node.parent = this;
+    if (isNaN(index)) {
+      this._children.push(node);
+    } else {
+      this._children.splice(index, 0, node);
+    }
     return node;
   }
 

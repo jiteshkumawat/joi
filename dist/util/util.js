@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var constants_1 = require("./constants");
 /**
  * Utility class with static methods to use
  */
@@ -23,8 +24,8 @@ var Util = /** @class */ (function () {
      * @returns - True if passed value is valid cell
      */
     Util.isCellString = function (value) {
-        // Test values having atmost three characters and at most 7 digits starting with non zero
-        var isValid = /^[A-Z]{1,3}[1-9]\d{0,6}$/.test(value);
+        // Test values having atmost three characters and at most 7 digits starting with non zero    
+        var isValid = constants_1.Constants.Regex.ValidCellString.test(value);
         if (isValid) {
             var _a = this.getCellColumnRow(value), column = _a.column, row = _a.row, columnNumber = _a.columnNumber;
             isValid =
@@ -53,8 +54,8 @@ var Util = /** @class */ (function () {
      * @returns - The column, row and columnNumber details of passed cell string
      */
     Util.getCellColumnRow = function (value) {
-        var column = value.match(/^[A-Z]{1,3}/)[0];
-        var row = parseInt(value.match(/\d{1,7}$/)[0], 10);
+        var column = value.match(constants_1.Constants.Regex.Column)[0];
+        var row = parseInt(value.match(constants_1.Constants.Regex.Row)[0], 10);
         var letter3 = (column.charCodeAt(2) || 64) - 64;
         var letter2 = (column.charCodeAt(1) || 64) - 64;
         var letter1 = (column.charCodeAt(0) || 64) - 64;

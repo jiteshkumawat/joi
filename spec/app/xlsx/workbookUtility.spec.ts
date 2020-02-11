@@ -7,7 +7,8 @@ import { WorkbookUtility } from "../../../app/xlsx/workbook.util";
 import { Sheet } from "../../../app/xlsx/sheet";
 import { SharedStringsFile } from "../../../entities/xlsx/files/sharedStringsFile";
 import * as sinon from "sinon";
-import { joi } from "../../../app/joi";
+import { xlsx } from "../../../app/joi";
+import { Constants } from "../../../util/constants";
 
 describe("App - Workbook Utility", function() {
   describe("initialize", function() {
@@ -16,10 +17,10 @@ describe("App - Workbook Utility", function() {
       this.eventBus = new EventBus();
       this.addedFiles = [];
       let self = this;
-      this.eventBus.startListening("addFile", function(file: any) {
+      this.eventBus.startListening(Constants.Events.AddFile, function(file: any) {
         self.addedFiles.push(file);
       });
-      this.eventBus.startListening("addContentType", function(
+      this.eventBus.startListening(Constants.Events.AddContentType, function(
         override: string,
         contentType: string,
         part: string
@@ -136,11 +137,11 @@ describe("App - Workbook Utility", function() {
       this.addedFiles = [];
       let self = this;
       this.eventBus = new EventBus();
-      this.eventBus.startListening("addFile", function(file: any) {
+      this.eventBus.startListening(Constants.Events.AddFile, function(file: any) {
         self.addedFiles.push(file);
       });
 
-      this.eventBus.startListening("addContentType", function(
+      this.eventBus.startListening(Constants.Events.AddContentType, function(
         override: string,
         contentType: string,
         part: string
@@ -270,7 +271,7 @@ describe("App - Workbook Utility", function() {
       this.addedFiles = [];
       let self = this;
       this.eventBus = new EventBus();
-      this.eventBus.startListening("addFile", function(file: any) {
+      this.eventBus.startListening(Constants.Events.AddFile, function(file: any) {
         self.addedFiles.push(file);
       });
 
@@ -285,7 +286,7 @@ describe("App - Workbook Utility", function() {
         });
 
       // ACT
-      this.eventBus.trigger("addWorkbookRelation", "target", "type");
+      this.eventBus.trigger(Constants.Events.AddWorkbookRelation, "target", "type");
 
       // ASSERT
       this.message = `
@@ -310,11 +311,11 @@ describe("App - Workbook Utility", function() {
       this.addedFiles = [];
       let self = this;
       this.eventBus = new EventBus();
-      this.eventBus.startListening("addFile", function(file: any) {
+      this.eventBus.startListening(Constants.Events.AddFile, function(file: any) {
         self.addedFiles.push(file);
       });
 
-      this.eventBus.startListening("addContentType", function(
+      this.eventBus.startListening(Constants.Events.AddContentType, function(
         override: string,
         contentType: string,
         part: string
@@ -348,9 +349,9 @@ describe("App - Workbook Utility", function() {
       this.workbookUtility = WorkbookUtilityBuilder.default(this.eventBus);
 
       // ACT
-      this.eventBus.trigger("sharedString", "Dummy string 1");
+      this.eventBus.trigger(Constants.Events.SharedString, "Dummy string 1");
       this.eventBus.trigger(
-        "sharedString",
+        Constants.Events.SharedString,
         1,
         (ss: { index: number; value: string }) => {
           // ASSERT
@@ -384,7 +385,7 @@ describe("App - Workbook Utility", function() {
     it("load file without any options", function(done) {
       // ARRANGE, ACT
       let self = this;
-      this.xlsx = joi.xlsx.load(this.xlsxFile).then(xls => {
+      this.xlsx = xlsx.load(this.xlsxFile).then(xls => {
 
         // ASSERT
         self.message = `

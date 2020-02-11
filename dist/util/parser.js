@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var attribute_1 = require("../entities/base/attribute");
 var node_1 = require("../entities/base/node");
+var constants_1 = require("./constants");
 /**
  * Xml Parser
  */
@@ -63,7 +64,7 @@ var XmlParser = /** @class */ (function () {
         parsedNode.namespaces = {};
         for (var i = 0; i < node.attributes.length; i++) {
             var attr = node.attributes[i];
-            if (attr.name.startsWith("xmlns")) {
+            if (attr.name.startsWith(constants_1.Constants.Common.Xmlns)) {
                 parsedNode.namespaces[attr.value] = attr.name.split(":")[1] || "";
             }
         }
@@ -98,7 +99,7 @@ var XmlParser = /** @class */ (function () {
         this.addNameSpaceForNodeJS(nodeName, node, xmlNode);
         if (node[nodeName] && node[nodeName].$) {
             for (var attr in node[nodeName].$) {
-                if (!attr.startsWith("xmlns")) {
+                if (!attr.startsWith(constants_1.Constants.Common.Xmlns)) {
                     var attrName = attr, attrNamespace = "";
                     if (attr.indexOf(":") > 0) {
                         var attrParams = attr.split(":");
@@ -130,7 +131,7 @@ var XmlParser = /** @class */ (function () {
         rootNode.namespaces = {};
         if (node[nodeName] && node[nodeName].$) {
             for (var attr in node[nodeName].$) {
-                if (attr.startsWith("xmlns")) {
+                if (attr.startsWith(constants_1.Constants.Common.Xmlns)) {
                     rootNode.namespaces[node[nodeName].$[attr]] =
                         attr.split(":")[1] || "";
                 }

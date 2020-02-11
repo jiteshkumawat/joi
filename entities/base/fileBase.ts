@@ -67,7 +67,7 @@ export class FileBase extends Xml {
         true,
         namespace || this.defaultNamespace
       );
-      this.rootNode.children.splice(index, 0, savedChild);
+      this.rootNode.child(savedChild, null, index);
       return { new: true, node: savedChild };
     }
 

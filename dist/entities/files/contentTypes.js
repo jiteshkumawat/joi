@@ -53,6 +53,7 @@ var xml_1 = require("../base/xml");
 var node_1 = require("../base/node");
 var attribute_1 = require("../base/attribute");
 var parser_1 = require("../../util/parser");
+var constants_1 = require("../../util/constants");
 /**
  * Content Types file
  */
@@ -64,7 +65,7 @@ var ContentTypes = /** @class */ (function (_super) {
     function ContentTypes(eventBus, fileName) {
         var _this = this;
         if (!fileName) {
-            _this = _super.call(this, new node_1.Node("Types", [], true, "", "http://schemas.openxmlformats.org/package/2006/content-types"), "[Content_Types].xml") || this;
+            _this = _super.call(this, new node_1.Node("Types", [], true, "", constants_1.Constants.Namespace.ContentType), constants_1.Constants.FileName.ContentTypes) || this;
         }
         _this.defaults = {};
         _this.overrides = {};
@@ -114,7 +115,7 @@ var ContentTypes = /** @class */ (function (_super) {
                 switch (_a.label) {
                     case 0:
                         contentTypes = new ContentTypes(eventBus, file.fileNameWithExtention);
-                        return [4 /*yield*/, parser_1.XmlParser.parse(file.fileContent, contentTypes, "http://schemas.openxmlformats.org/package/2006/content-types")];
+                        return [4 /*yield*/, parser_1.XmlParser.parse(file.fileContent, contentTypes, constants_1.Constants.Namespace.ContentType)];
                     case 1:
                         _a.sent();
                         contentTypes.rootNode.children.forEach(function (childNode) {
@@ -143,8 +144,8 @@ var ContentTypes = /** @class */ (function (_super) {
      */
     ContentTypes.prototype.bindListeners = function (eventBus) {
         var _this = this;
-        eventBus.stopListening("addContentType");
-        eventBus.startListening("addContentType", function (type, contentType, arg) {
+        eventBus.stopListening(constants_1.Constants.Events.AddContentType);
+        eventBus.startListening(constants_1.Constants.Events.AddContentType, function (type, contentType, arg) {
             if (type.toLowerCase() === "default") {
                 _this.addDefault(contentType, arg);
             }

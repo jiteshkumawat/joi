@@ -1,5 +1,6 @@
 import { Xml } from "../entities/base/xml";
 import { Relationships } from "../entities/files/relationships";
+import { Constants } from "../util/constants";
 
 declare let JSZip: any;
 declare let saveAs: any;
@@ -227,7 +228,7 @@ export class JSZipAdapter {
           }
         } catch (err) {
           if (callback) {
-            callback(null, "Err: Not able to create file object.");
+            callback(null, Constants.Errors.ErrCreateFileObject);
           } else {
             throw err;
           }
@@ -235,7 +236,7 @@ export class JSZipAdapter {
       });
     } catch (err) {
       if (callback) {
-        callback("Err: Not able to create workbook.");
+        callback(Constants.Errors.ErrCreateWorkbook);
         console.error(err);
       } else {
         throw err;
@@ -275,7 +276,7 @@ export class JSZipAdapter {
       }
     } catch (err) {
       if (callback) {
-        callback("Err: Not able to create workbook.");
+        callback(Constants.Errors.ErrCreateWorkbook);
         console.error(err);
       } else {
         return Promise.reject(err);

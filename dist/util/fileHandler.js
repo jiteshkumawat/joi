@@ -36,6 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var constants_1 = require("../util/constants");
 /**
  * File type in Oxml
  */
@@ -199,7 +200,7 @@ var JSZipAdapter = /** @class */ (function () {
                 }
                 catch (err) {
                     if (callback) {
-                        callback(null, "Err: Not able to create file object.");
+                        callback(null, constants_1.Constants.Errors.ErrCreateFileObject);
                     }
                     else {
                         throw err;
@@ -209,7 +210,7 @@ var JSZipAdapter = /** @class */ (function () {
         }
         catch (err) {
             if (callback) {
-                callback("Err: Not able to create workbook.");
+                callback(constants_1.Constants.Errors.ErrCreateWorkbook);
                 console.error(err);
             }
             else {
@@ -245,7 +246,7 @@ var JSZipAdapter = /** @class */ (function () {
         }
         catch (err) {
             if (callback) {
-                callback("Err: Not able to create workbook.");
+                callback(constants_1.Constants.Errors.ErrCreateWorkbook);
                 console.error(err);
             }
             else {

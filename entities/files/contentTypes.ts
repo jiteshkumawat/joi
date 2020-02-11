@@ -4,6 +4,7 @@ import { Attribute } from "../base/attribute";
 import { XmlParser } from "../../util/parser";
 import { FileAdapter } from "../../util/fileHandler";
 import { EventBus } from "../../util/eventBus";
+import { Constants } from "../../util/constants";
 
 /**
  * Content Types file
@@ -20,9 +21,9 @@ export class ContentTypes extends Xml {
           [],
           true,
           "",
-          "http://schemas.openxmlformats.org/package/2006/content-types"
+          Constants.Namespace.ContentType
         ),
-        "[Content_Types].xml"
+        Constants.FileName.ContentTypes
       );
     }
 
@@ -91,7 +92,7 @@ export class ContentTypes extends Xml {
     await XmlParser.parse(
       file.fileContent,
       contentTypes,
-      "http://schemas.openxmlformats.org/package/2006/content-types"
+      Constants.Namespace.ContentType
     );
 
     contentTypes.rootNode.children.forEach(childNode => {
@@ -134,9 +135,9 @@ export class ContentTypes extends Xml {
    * @param eventBus - Event Bus
    */
   private bindListeners(eventBus: EventBus) {
-    eventBus.stopListening("addContentType");
+    eventBus.stopListening(Constants.Events.AddContentType);
     eventBus.startListening(
-      "addContentType",
+      Constants.Events.AddContentType,
       (type: string, contentType: string, arg: string) => {
         if (type.toLowerCase() === "default") {
           this.addDefault(contentType, arg);

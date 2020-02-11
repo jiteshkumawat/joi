@@ -53,6 +53,7 @@ var xml_1 = require("../base/xml");
 var attribute_1 = require("../base/attribute");
 var node_1 = require("../base/node");
 var parser_1 = require("../../util/parser");
+var constants_1 = require("../../util/constants");
 /**
  * Relationship file
  */
@@ -64,7 +65,7 @@ var Relationships = /** @class */ (function (_super) {
      * @param {string} filePath - The file path
      */
     function Relationships(fileName, filePath) {
-        var _this = _super.call(this, new node_1.Node("Relationships", [], true, "", "http://schemas.openxmlformats.org/package/2006/relationships"), fileName || ".rels", filePath || "_rels") || this;
+        var _this = _super.call(this, new node_1.Node("Relationships", [], true, "", constants_1.Constants.Namespace.RelationshipPackage), fileName || constants_1.Constants.FileName.Relationship, filePath || constants_1.Constants.FilePath.Relationship) || this;
         _this.id = 1;
         return _this;
     }
@@ -77,7 +78,7 @@ var Relationships = /** @class */ (function (_super) {
      */
     Relationships.prototype.addRelationship = function (target, type, id) {
         if (typeof id === "string") {
-            id = parseInt(id.match(/\d+/)[0], 10);
+            id = parseInt(id.match(constants_1.Constants.Regex.NumericId)[0], 10);
         }
         if (!id) {
             id = this.id++;
@@ -142,7 +143,7 @@ var Relationships = /** @class */ (function (_super) {
                 switch (_a.label) {
                     case 0:
                         relationships = new Relationships();
-                        return [4 /*yield*/, parser_1.XmlParser.parse(content, relationships, "http://schemas.openxmlformats.org/package/2006/relationships")];
+                        return [4 /*yield*/, parser_1.XmlParser.parse(content, relationships, constants_1.Constants.Namespace.RelationshipPackage)];
                     case 1:
                         _a.sent();
                         relationships.filePath = filePath || "";

@@ -53,6 +53,7 @@ var fileBase_1 = require("../../base/fileBase");
 var parser_1 = require("../../../util/parser");
 var node_1 = require("../../base/node");
 var attribute_1 = require("../../base/attribute");
+var constants_1 = require("../../../util/constants");
 var SheetFile = /** @class */ (function (_super) {
     __extends(SheetFile, _super);
     /**
@@ -61,48 +62,8 @@ var SheetFile = /** @class */ (function (_super) {
      * @param name - Sheet Name. Reffered in workbook file.
      */
     function SheetFile(id, name, isLoad) {
-        var _this = _super.call(this, new node_1.Node("worksheet", [], true, "", "http://schemas.openxmlformats.org/spreadsheetml/2006/main"), "sheet" + id + ".xml", "workbook/sheets") || this;
-        _this.RootChildNodes = [
-            "sheetPr",
-            "dimension",
-            "sheetViews",
-            "sheetFormatPr",
-            "cols",
-            "sheetData",
-            "sheetCalcPr",
-            "sheetProtection",
-            "protectedRanges",
-            "scenarios",
-            "autoFilter",
-            "sortState",
-            "dataConsolidate",
-            "customSheetViews",
-            "mergeCells",
-            "phoneticPr",
-            "conditionalFormatting",
-            "dataValidations",
-            "hyperlinks",
-            "printOptions",
-            "pageMargins",
-            "pageSetup",
-            "headerFooter",
-            "rowBreaks",
-            "colBreaks",
-            "customProperties",
-            "cellWatches",
-            "ignoredErrors",
-            "smartTags",
-            "drawing",
-            "legacyDrawing",
-            "legacyDrawingHF",
-            "drawingHF",
-            "picture",
-            "oleObjects",
-            "controls",
-            "webPublishItems",
-            "tableParts",
-            "extLst"
-        ];
+        var _this = _super.call(this, new node_1.Node("worksheet", [], true, "", constants_1.Constants.Namespace.Workbook), constants_1.Constants.FileName.Worksheet + id + ".xml", constants_1.Constants.FilePath.Worksheet) || this;
+        _this.RootChildNodes = constants_1.Constants.RootChildNodes.Worksheet;
         if (!isLoad) {
             _this.name = name;
             // this.rId = rId;
@@ -221,7 +182,7 @@ var SheetFile = /** @class */ (function (_super) {
                 switch (_a.label) {
                     case 0:
                         sheetFile = new SheetFile(undefined, undefined, true);
-                        return [4 /*yield*/, parser_1.XmlParser.parse(content, sheetFile, "http://schemas.openxmlformats.org/spreadsheetml/2006/main")];
+                        return [4 /*yield*/, parser_1.XmlParser.parse(content, sheetFile, constants_1.Constants.Namespace.Workbook)];
                     case 1:
                         _a.sent();
                         sheetFile.fileName = fileName;

@@ -1,6 +1,7 @@
 import { Xml } from "../entities/base/xml";
 import { Attribute } from "../entities/base/attribute";
 import { Node } from "../entities/base/node";
+import { Constants } from "./constants";
 
 /**
  * Xml Parser
@@ -84,7 +85,7 @@ export class XmlParser {
     parsedNode.namespaces = {};
     for (let i = 0; i < node.attributes.length; i++) {
       let attr = node.attributes[i];
-      if (attr.name.startsWith("xmlns")) {
+      if (attr.name.startsWith(Constants.Common.Xmlns)) {
         parsedNode.namespaces[attr.value] = attr.name.split(":")[1] || "";
       }
     }
@@ -134,7 +135,7 @@ export class XmlParser {
 
     if (node[nodeName] && node[nodeName].$) {
       for (let attr in node[nodeName].$) {
-        if (!attr.startsWith("xmlns")) {
+        if (!attr.startsWith(Constants.Common.Xmlns)) {
           let attrName = attr,
             attrNamespace = "";
           if (attr.indexOf(":") > 0) {
@@ -175,7 +176,7 @@ export class XmlParser {
     rootNode.namespaces = {};
     if (node[nodeName] && node[nodeName].$) {
       for (let attr in node[nodeName].$) {
-        if (attr.startsWith("xmlns")) {
+        if (attr.startsWith(Constants.Common.Xmlns)) {
           rootNode.namespaces[node[nodeName].$[attr]] =
             attr.split(":")[1] || "";
         }

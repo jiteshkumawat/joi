@@ -1,4 +1,4 @@
-import { stringify } from "querystring";
+import { Constants } from "./constants";
 
 /**
  * Utility class with static methods to use
@@ -22,8 +22,8 @@ export class Util {
    * @returns - True if passed value is valid cell
    */
   public static isCellString(value: string) {
-    // Test values having atmost three characters and at most 7 digits starting with non zero
-    let isValid = /^[A-Z]{1,3}[1-9]\d{0,6}$/.test(value);
+    // Test values having atmost three characters and at most 7 digits starting with non zero    
+    let isValid = Constants.Regex.ValidCellString.test(value);
     if (isValid) {
       const { column, row, columnNumber } = this.getCellColumnRow(value);
       isValid =
@@ -55,8 +55,8 @@ export class Util {
    * @returns - The column, row and columnNumber details of passed cell string
    */
   public static getCellColumnRow(value: string) {
-    const column = value.match(/^[A-Z]{1,3}/)[0];
-    const row = parseInt(value.match(/\d{1,7}$/)[0], 10);
+    const column = value.match(Constants.Regex.Column)[0];
+    const row = parseInt(value.match(Constants.Regex.Row)[0], 10);
     const letter3 = (column.charCodeAt(2) || 64) - 64;
     const letter2 = (column.charCodeAt(1) || 64) - 64;
     const letter1 = (column.charCodeAt(0) || 64) - 64;

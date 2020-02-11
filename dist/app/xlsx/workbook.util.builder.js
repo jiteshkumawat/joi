@@ -41,6 +41,8 @@ var relationships_1 = require("../../entities/files/relationships");
 var sharedStringsFile_1 = require("../../entities/xlsx/files/sharedStringsFile");
 var workbook_util_1 = require("./workbook.util");
 var fileHandler_1 = require("../../util/fileHandler");
+var sheet_builder_1 = require("./sheet.builder");
+var constants_1 = require("../../util/constants");
 /**
  * Builder class for Workbook Utility
  */
@@ -56,10 +58,10 @@ var WorkbookUtilityBuilder = /** @class */ (function () {
         var relations;
         var sharedStringFile;
         workbook = new workbookFile_1.WorkbookFile(eventBus);
-        eventBus.trigger("addContentType", "Override", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml", "/workbook/workbook.xml");
-        eventBus.trigger("addFile", workbook);
+        eventBus.trigger(constants_1.Constants.Events.AddContentType, "Override", constants_1.Constants.ContentTypes.Workbook, "/workbook/workbook.xml");
+        eventBus.trigger(constants_1.Constants.Events.AddFile, workbook);
         relations = new relationships_1.Relationships("workbook.xml.rels", "workbook/_rels");
-        eventBus.trigger("addFile", relations);
+        eventBus.trigger(constants_1.Constants.Events.AddFile, relations);
         var workbookUtility = new workbook_util_1.WorkbookUtility(eventBus, workbook, relations, sharedStringFile);
         return workbookUtility;
     };
@@ -71,55 +73,101 @@ var WorkbookUtilityBuilder = /** @class */ (function () {
      */
     WorkbookUtilityBuilder.create = function (eventBus, files, contentTypes) {
         return __awaiter(this, void 0, void 0, function () {
-            var workbookContentType, workbookFile, relationsFile, relation, sharedStringRel, saredStrings, sharedStringRelValue_1, sharedStringFile, workbookFileXml, workbookUtility;
+            var workbookFileAdapter, relationshipFile, saredStringsFile, workbookFile, workbookUtility;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        workbookContentType = contentTypes.overrides["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"];
-                        if (workbookContentType.startsWith("/")) {
-                            workbookContentType = workbookContentType.substring(1);
-                        }
-                        workbookFile = files.find(function (fl) { return fl.completeName === workbookContentType; });
-                        relationsFile = fileHandler_1.FileAdapter.getRelationshipFile(workbookFile.filePath, files, contentTypes.defaults["application/vnd.openxmlformats-package.relationships+xml"]);
+                        workbookFileAdapter = this.getWorkbookFileAdapter(contentTypes, files);
+                        return [4 /*yield*/, this.loadRelationshipsFile(workbookFileAdapter, files, contentTypes, eventBus)];
+                    case 1:
+                        relationshipFile = _a.sent();
+                        return [4 /*yield*/, this.loadSharedStringsFile(relationshipFile, files, workbookFileAdapter)];
+                    case 2:
+                        saredStringsFile = _a.sent();
+                        return [4 /*yield*/, workbookFile_1.WorkbookFile.load(eventBus, workbookFileAdapter.fileContent, workbookFileAdapter.fileName, workbookFileAdapter.filePath)];
+                    case 3:
+                        workbookFile = _a.sent();
+                        eventBus.trigger(constants_1.Constants.Events.AddFile, workbookFile);
+                        return [4 /*yield*/, this.loadSheets(workbookFile, workbookFileAdapter, relationshipFile, files, eventBus)];
+                    case 4:
+                        _a.sent();
+                        workbookUtility = new workbook_util_1.WorkbookUtility(eventBus, workbookFile, relationshipFile, saredStringsFile);
+                        return [2 /*return*/, workbookUtility];
+                }
+            });
+        });
+    };
+    WorkbookUtilityBuilder.getWorkbookFileAdapter = function (contentTypes, files) {
+        var workbookContentType = contentTypes.overrides[constants_1.Constants.ContentTypes.Workbook];
+        if (workbookContentType.startsWith("/")) {
+            workbookContentType = workbookContentType.substring(1);
+        }
+        var workbookFile = files.find(function (fl) { return fl.completeName === workbookContentType; });
+        return workbookFile;
+    };
+    WorkbookUtilityBuilder.loadRelationshipsFile = function (workbookFile, files, contentTypes, eventBus) {
+        return __awaiter(this, void 0, void 0, function () {
+            var relationsFile, relation;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        relationsFile = fileHandler_1.FileAdapter.getRelationshipFile(workbookFile.filePath, files, contentTypes.defaults[constants_1.Constants.ContentTypes.Relationship]);
                         if (!!relationsFile.processed) return [3 /*break*/, 2];
                         return [4 /*yield*/, relationships_1.Relationships.load(relationsFile.fileContent, relationsFile.fileNameWithExtention, relationsFile.filePath)];
                     case 1:
                         relation = _a.sent();
-                        eventBus.trigger("addFile", relation);
+                        eventBus.trigger(constants_1.Constants.Events.AddFile, relation);
                         relationsFile.processed = true;
                         relationsFile.xmlFile = relation;
                         _a.label = 2;
-                    case 2:
-                        sharedStringRel = relation.getByRelationship("http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings");
-                        if (!sharedStringRel) return [3 /*break*/, 4];
+                    case 2: return [2 /*return*/, relation];
+                }
+            });
+        });
+    };
+    WorkbookUtilityBuilder.loadSharedStringsFile = function (relation, files, workbookFile) {
+        return __awaiter(this, void 0, void 0, function () {
+            var sharedStringRel, saredStrings, sharedStringRelValue_1, sharedStringFile;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        sharedStringRel = relation.getByRelationship(constants_1.Constants.Relationships.SharedString);
+                        if (!sharedStringRel) return [3 /*break*/, 2];
                         sharedStringRelValue_1 = sharedStringRel.attribute("Target", relation.defaultNamespace).value;
                         sharedStringFile = files.find(function (fl) {
                             return fl.filePath ===
                                 workbookFile.filePath +
                                     sharedStringRelValue_1.substring(0, sharedStringRelValue_1.lastIndexOf("/"));
                         });
-                        if (!!sharedStringFile.processed) return [3 /*break*/, 4];
+                        if (!!sharedStringFile.processed) return [3 /*break*/, 2];
                         return [4 /*yield*/, sharedStringsFile_1.SharedStringsFile.load(sharedStringFile.fileContent, sharedStringFile.fileName, sharedStringFile.filePath)];
-                    case 3:
+                    case 1:
                         saredStrings = _a.sent();
-                        _a.label = 4;
-                    case 4: return [4 /*yield*/, workbookFile_1.WorkbookFile.load(eventBus, workbookFile.fileContent, workbookFile.fileName, workbookFile.filePath)];
-                    case 5:
-                        workbookFileXml = _a.sent();
-                        eventBus.trigger("addFile", workbookFileXml);
-                        workbookFileXml.sheets.children.forEach(function (sheetNode) {
-                            var rId = sheetNode.getAttribute("r:Id").value;
-                            var relationNode = relation.getById(rId);
-                            var filePath = relationNode.attribute("Target", relation.defaultNamespace).value;
-                            // const file = files.find(
-                            //   f => f.filePath + "/" + f.fileNameWithExtention === filePath
-                            // );
-                            // if (!file.processed) {
-                            // }
-                        });
-                        workbookUtility = new workbook_util_1.WorkbookUtility(eventBus, workbookFileXml, relation, saredStrings);
-                        return [2 /*return*/, workbookUtility];
+                        _a.label = 2;
+                    case 2: return [2 /*return*/, saredStrings];
                 }
+            });
+        });
+    };
+    WorkbookUtilityBuilder.loadSheets = function (workbookFileXml, workbookFile, relation, files, eventBus) {
+        return __awaiter(this, void 0, void 0, function () {
+            var relationshipNamespace;
+            return __generator(this, function (_a) {
+                relationshipNamespace = workbookFileXml.sheets.getNamespacePrefix(constants_1.Constants.Namespace.Relationships);
+                workbookFileXml.sheets.children.forEach(function (sheetNode) {
+                    var rId = sheetNode.attribute("Id", relationshipNamespace).value;
+                    var relationNode = relation.getById(rId);
+                    var sheetId = sheetNode.attribute("sheetId", workbookFileXml.defaultNamespace).value;
+                    var sheetName = sheetNode.attribute("name", workbookFileXml.defaultNamespace).value;
+                    var filePath = workbookFile.filePath +
+                        "/" +
+                        relationNode.attribute("Target", relation.defaultNamespace).value;
+                    var file = files.find(function (f) { return f.filePath + "/" + f.fileNameWithExtention === filePath; });
+                    if (!file.processed) {
+                        sheet_builder_1.SheetBuilder.create(file, eventBus, workbookFileXml, parseInt(sheetId), sheetName);
+                    }
+                });
+                return [2 /*return*/];
             });
         });
     };

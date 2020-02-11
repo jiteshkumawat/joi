@@ -1,6 +1,7 @@
 import { SheetFile } from "../../entities/xlsx/files/sheetFile";
 import { EventBus } from "../../util/eventBus";
 import { WorkbookFile } from "../../entities/xlsx/files/workbookFile";
+import { Constants } from "../../util/constants";
 
 /**
  * Define a new worksheet file
@@ -12,7 +13,7 @@ export class Sheet {
     workbookFile: WorkbookFile
   ) {
     let self = this;
-    eventBus.trigger("addFile", sheetFile);
+    eventBus.trigger(Constants.Events.AddFile, sheetFile);
 
     this.defineNameProperty(sheetFile, workbookFile);
 

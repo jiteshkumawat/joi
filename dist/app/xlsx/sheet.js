@@ -1,12 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var constants_1 = require("../../util/constants");
 /**
  * Define a new worksheet file
  */
 var Sheet = /** @class */ (function () {
     function Sheet(sheetFile, eventBus, workbookFile) {
         var self = this;
-        eventBus.trigger("addFile", sheetFile);
+        eventBus.trigger(constants_1.Constants.Events.AddFile, sheetFile);
         this.defineNameProperty(sheetFile, workbookFile);
         /**
          * Configure Sheet Properties

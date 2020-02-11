@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var sharedStringsFile_1 = require("../../entities/xlsx/files/sharedStringsFile");
 var sheet_builder_1 = require("./sheet.builder");
+var constants_1 = require("../../util/constants");
 /**
  * Utility class for workbook
  */
@@ -29,9 +30,9 @@ var WorkbookUtility = /** @class */ (function () {
         this.sharedString = function (value) {
             if (!sharedStringFile) {
                 sharedStringFile = new sharedStringsFile_1.SharedStringsFile();
-                eventBus.trigger("addFile", sharedStringFile);
-                relations.addRelationship("sharedstrings.xml", "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings");
-                eventBus.trigger("addContentType", "Override", "application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml", "/workbook/sharedstrings.xml");
+                eventBus.trigger(constants_1.Constants.Events.AddFile, sharedStringFile);
+                relations.addRelationship("sharedstrings.xml", constants_1.Constants.Relationships.SharedString);
+                eventBus.trigger(constants_1.Constants.Events.AddContentType, "Override", constants_1.Constants.ContentTypes.SharedString, "/workbook/sharedstrings.xml");
             }
             if (typeof value === "string") {
                 sharedStringFile.addCount();
@@ -53,7 +54,7 @@ var WorkbookUtility = /** @class */ (function () {
      */
     WorkbookUtility.prototype.bindListeners = function (workbook, relations, eventBus) {
         var _this = this;
-        eventBus.startListening("addWorkbookRelation", function (target, type, callback) {
+        eventBus.startListening(constants_1.Constants.Events.AddWorkbookRelation, function (target, type, callback) {
             var rId = relations.addRelationship(target, type);
             if (callback) {
                 callback(rId);
@@ -62,7 +63,7 @@ var WorkbookUtility = /** @class */ (function () {
         // eventBus.startListening("activateTab", (tabNumber: number) => {
         //   workbook.activeTab.value = tabNumber.toString(10);
         // });
-        eventBus.startListening("sharedString", function (value, callback) {
+        eventBus.startListening(constants_1.Constants.Events.SharedString, function (value, callback) {
             var sharedStringIndex = _this.sharedString(value);
             if (callback) {
                 callback(sharedStringIndex);

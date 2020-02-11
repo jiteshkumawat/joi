@@ -53,6 +53,7 @@ var xml_1 = require("../../base/xml");
 var node_1 = require("../../base/node");
 var parser_1 = require("../../../util/parser");
 var attribute_1 = require("../../base/attribute");
+var constants_1 = require("../../../util/constants");
 /**
  * Define new Shared string file
  */
@@ -62,7 +63,7 @@ var SharedStringsFile = /** @class */ (function (_super) {
      * Initialize new workbook file
      */
     function SharedStringsFile() {
-        var _this = _super.call(this, new node_1.Node("sst", [], true, "", "http://schemas.openxmlformats.org/spreadsheetml/2006/main"), "sharedstrings.xml", "workbook") || this;
+        var _this = _super.call(this, new node_1.Node("sst", [], true, "", constants_1.Constants.Namespace.Workbook), constants_1.Constants.FileName.SharedString, constants_1.Constants.FilePath.Workbook) || this;
         // this.rootNode.addNamespace(
         //   "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
         //   "r"
@@ -143,7 +144,7 @@ var SharedStringsFile = /** @class */ (function (_super) {
                         sharedStringsFile = new SharedStringsFile();
                         sharedStringsFile.fileName = fileName;
                         sharedStringsFile.filePath = filePath;
-                        return [4 /*yield*/, parser_1.XmlParser.parse(content, sharedStringsFile, "http://schemas.openxmlformats.org/spreadsheetml/2006/main")];
+                        return [4 /*yield*/, parser_1.XmlParser.parse(content, sharedStringsFile, constants_1.Constants.Namespace.Workbook)];
                     case 1:
                         _a.sent();
                         sharedStringsFile.resetCount();

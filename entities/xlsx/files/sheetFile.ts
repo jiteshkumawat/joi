@@ -2,6 +2,7 @@ import { FileBase } from "../../base/fileBase";
 import { XmlParser } from "../../../util/parser";
 import { Node } from "../../base/node";
 import { Attribute } from "../../base/attribute";
+import { Constants } from "../../../util/constants";
 
 export class SheetFile extends FileBase {
   /**
@@ -16,52 +17,12 @@ export class SheetFile extends FileBase {
         [],
         true,
         "",
-        "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+        Constants.Namespace.Workbook
       ),
-      "sheet" + id + ".xml",
-      "workbook/sheets"
+      Constants.FileName.Worksheet + id + ".xml",
+      Constants.FilePath.Worksheet
     );
-    this.RootChildNodes = [
-      "sheetPr",
-      "dimension",
-      "sheetViews",
-      "sheetFormatPr",
-      "cols",
-      "sheetData",
-      "sheetCalcPr",
-      "sheetProtection",
-      "protectedRanges",
-      "scenarios",
-      "autoFilter",
-      "sortState",
-      "dataConsolidate",
-      "customSheetViews",
-      "mergeCells",
-      "phoneticPr",
-      "conditionalFormatting",
-      "dataValidations",
-      "hyperlinks",
-      "printOptions",
-      "pageMargins",
-      "pageSetup",
-      "headerFooter",
-      "rowBreaks",
-      "colBreaks",
-      "customProperties",
-      "cellWatches",
-      "ignoredErrors",
-      "smartTags",
-      "drawing",
-      "legacyDrawing",
-      "legacyDrawingHF",
-      "drawingHF",
-      "picture",
-      "oleObjects",
-      "controls",
-      "webPublishItems",
-      "tableParts",
-      "extLst"
-    ];
+    this.RootChildNodes = Constants.RootChildNodes.Worksheet;
     if (!isLoad) {
       this.name = name;
       // this.rId = rId;
@@ -186,7 +147,7 @@ export class SheetFile extends FileBase {
     await XmlParser.parse(
       content,
       sheetFile,
-      "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+      Constants.Namespace.Workbook
     );
     sheetFile.fileName = fileName;
     sheetFile.filePath = filePath;

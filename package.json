@@ -6,7 +6,8 @@
   "scripts": {
     "test": "mocha -r ts-node/register spec/**/*.spec.ts",
     "testWithCoverage": "nyc -r lcov -e .ts -x \"spec/**/*.spec.ts\" mocha -r ts-node/register spec/**/*.spec.ts && nyc report",
-    "build": "tsc && tsc -p tsconfig.browser.amd.json && call build/build.browser.bat"
+    "build": "tsc && tsc -p tsconfig.browser.amd.json && call build/build.browser.bat",
+    "debug-start": "node --inspect-brk ./playground/playground.js"
   },
   "keywords": [
     "open",

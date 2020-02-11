@@ -2,6 +2,8 @@ import { WorkbookFile } from "../../entities/xlsx/files/workbookFile";
 import { EventBus } from "../../util/eventBus";
 import { Sheet } from "./sheet";
 import { SheetFile } from "../../entities/xlsx/files/sheetFile";
+import { FileAdapter } from "../../util/fileHandler";
+import { Constants } from "../../util/constants";
 
 export class SheetBuilder {
   public static default(
@@ -14,38 +16,43 @@ export class SheetBuilder {
       relPath = "sheets/" + sheetFile.fileName;
 
     eventBus.trigger(
-      "addContentType",
+      Constants.Events.AddContentType,
       "Override",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml",
+      Constants.ContentTypes.Worksheet,
       completeFilePath
     );
 
     eventBus.trigger(
-      "addWorkbookRelation",
+      Constants.Events.AddWorkbookRelation,
       relPath,
-      "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet",
+      Constants.Relationships.Worksheet,
       function(rId: string) {
-        eventBus.trigger("setSheetRelationId", sheetFile.id, rId);
+        eventBus.trigger(Constants.Events.SetSheetRelationId, sheetFile.id, rId);
       }
     );
 
-    const sheet = new Sheet(sheetFile, eventBus, workbookFile)
+    const sheet = new Sheet(sheetFile, eventBus, workbookFile);
 
-    eventBus.trigger("setSheetWorkbookView", sheetFile.id);
+    eventBus.trigger(Constants.Events.SetSheetWorkbookView, sheetFile.id);
 
     return sheet;
   }
 
   public static async create(
-    content: string,
+    file: FileAdapter,
     eventBus: EventBus,
     workbookFile: WorkbookFile,
-    fileName: string,
-    filePath: string,
     id: number,
     name: string
   ) {
-    let sheetFile = await SheetFile.load(content, fileName, filePath, id, name);
+    file.processed = true;
+    let sheetFile = await SheetFile.load(
+      file.fileContent,
+      file.fileName,
+      file.filePath,
+      id,
+      name
+    );
     return new Sheet(sheetFile, eventBus, workbookFile);
   }
 }

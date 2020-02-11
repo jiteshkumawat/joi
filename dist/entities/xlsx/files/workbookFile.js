@@ -54,6 +54,7 @@ var sheetFile_1 = require("./sheetFile");
 var attribute_1 = require("../../base/attribute");
 var parser_1 = require("../../../util/parser");
 var fileBase_1 = require("../../base/fileBase");
+var constants_1 = require("../../../util/constants");
 /**
  * Define new workbook file
  */
@@ -66,30 +67,10 @@ var WorkbookFile = /** @class */ (function (_super) {
      * @param isLoad - The file
      */
     function WorkbookFile(eventBus, fileName, filePath, isLoad) {
-        var _this = _super.call(this, new node_1.Node("workbook", [], true, "", "http://schemas.openxmlformats.org/spreadsheetml/2006/main"), fileName || "workbook.xml", filePath || "workbook") || this;
-        _this.RootChildNodes = [
-            "bookViews",
-            "calcPr",
-            "customWorkbookViews",
-            "definedNames",
-            "externalReferences",
-            "extLst",
-            "fileRecoveryPr",
-            "fileSharing",
-            "fileVersion",
-            "functionGroups",
-            "oleSize",
-            "pivotCaches",
-            "sheets",
-            "smartTagPr",
-            "smartTagTypes",
-            "webPublishing",
-            "webPublishObjects",
-            "workbookPr",
-            "workbookProtection"
-        ];
+        var _this = _super.call(this, new node_1.Node("workbook", [], true, "", constants_1.Constants.Namespace.Workbook), fileName || constants_1.Constants.FileName.Workbook, filePath || constants_1.Constants.FilePath.Workbook) || this;
+        _this.RootChildNodes = constants_1.Constants.RootChildNodes.Workbook;
         if (!isLoad) {
-            _this.rootNode.addNamespace("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "r");
+            _this.rootNode.addNamespace(constants_1.Constants.Namespace.Relationships, "r");
             _this.workbookViews = [];
             _this.sheets = _this.addRootChild("sheets", _this.defaultNamespace).node;
             _this.initializeView();
@@ -151,7 +132,7 @@ var WorkbookFile = /** @class */ (function (_super) {
                 switch (_a.label) {
                     case 0:
                         workbookFile = new WorkbookFile(eventBus, fileName, filePath, true);
-                        return [4 /*yield*/, parser_1.XmlParser.parse(content, workbookFile, "http://schemas.openxmlformats.org/spreadsheetml/2006/main")];
+                        return [4 /*yield*/, parser_1.XmlParser.parse(content, workbookFile, constants_1.Constants.Namespace.Workbook)];
                     case 1:
                         _a.sent();
                         workbookFile.loadInternal();
@@ -194,15 +175,14 @@ var WorkbookFile = /** @class */ (function (_super) {
     WorkbookFile.prototype.bindListeners = function (eventBus) {
         var _this = this;
         var self = this;
-        eventBus.startListening("setSheetRelationId", function (id, rId) {
+        eventBus.startListening(constants_1.Constants.Events.SetSheetRelationId, function (id, rId) {
             var sheetNode = self.sheets.children.find(function (sheet) {
                 return sheet.attribute("sheetId", self.defaultNamespace).value ===
                     id.toString();
             });
-            sheetNode.attribute(new attribute_1.Attribute("id", rId, true, _this.rootNode.namespaces["http://schemas.openxmlformats.org/officeDocument/2006/relationships"]));
+            sheetNode.attribute(new attribute_1.Attribute("id", rId, true, _this.rootNode.namespaces[constants_1.Constants.Namespace.Relationships]));
         });
-        eventBus.startListening("setSheetWorkbookView", function (sheetId, index, callback) {
-            console.log("setSheetWorkbookView triggered");
+        eventBus.startListening(constants_1.Constants.Events.SetSheetWorkbookView, function (sheetId, index, callback) {
             if (index === undefined || index === null) {
             }
         });

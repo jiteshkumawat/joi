@@ -1,9 +1,16 @@
-var joi = require("../dist/utility/joi");
+var joi = require("../dist/app/joi");
+var fs = require('fs');
 
 console.log(joi);
 
-var newxl = new joi.xlsx();
-var sheet = newxl.sheet();
-var cell = sheet.cell(1, 1, { value: "Hello World", type: "sharedString" });
-console.log(JSON.stringify(cell));
-newxl.download();
+fs.readFile('./playground/simple.xlsx', function (err, data) {
+    if (err) {
+      throw err; 
+    }
+
+    
+    debugger;
+    joi.xlsx.load(data, function (newxl) {
+        console.log(newxl);
+      });
+  });

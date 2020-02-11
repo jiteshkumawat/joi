@@ -2,6 +2,7 @@ import { Xml } from "../base/xml";
 import { Attribute } from "../base/attribute";
 import { Node } from "../base/node";
 import { XmlParser } from "../../util/parser";
+import { Constants } from "../../util/constants";
 
 /**
  * Relationship file
@@ -19,10 +20,10 @@ export class Relationships extends Xml {
         [],
         true,
         "",
-        "http://schemas.openxmlformats.org/package/2006/relationships"
+        Constants.Namespace.RelationshipPackage
       ),
-      fileName || ".rels",
-      filePath || "_rels"
+      fileName || Constants.FileName.Relationship,
+      filePath || Constants.FilePath.Relationship
     );
 
     this.id = 1;
@@ -46,7 +47,7 @@ export class Relationships extends Xml {
     id?: number | string
   ): string {
     if (typeof id === "string") {
-      id = parseInt(id.match(/\d+/)[0], 10);
+      id = parseInt(id.match(Constants.Regex.NumericId)[0], 10);
     }
 
     if (!id) {
@@ -126,7 +127,7 @@ export class Relationships extends Xml {
     await XmlParser.parse(
       content,
       relationships,
-      "http://schemas.openxmlformats.org/package/2006/relationships"
+      Constants.Namespace.RelationshipPackage
     );
     relationships.filePath = filePath || "";
     relationships.fileName = fileName;

@@ -2,6 +2,7 @@ import { Xml } from "../../base/xml";
 import { Node } from "../../base/node";
 import { XmlParser } from "../../../util/parser";
 import { Attribute } from "../../base/attribute";
+import { Constants } from "../../../util/constants";
 
 /**
  * Define new Shared string file
@@ -27,10 +28,10 @@ export class SharedStringsFile extends Xml {
         [],
         true,
         "",
-        "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+        Constants.Namespace.Workbook
       ),
-      "sharedstrings.xml",
-      "workbook"
+      Constants.FileName.SharedString,
+      Constants.FilePath.Workbook
     );
 
     // this.rootNode.addNamespace(
@@ -128,7 +129,7 @@ export class SharedStringsFile extends Xml {
     await XmlParser.parse(
       content,
       sharedStringsFile,
-      "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+      Constants.Namespace.Workbook
     );
     sharedStringsFile.resetCount();
 

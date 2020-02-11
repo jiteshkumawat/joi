@@ -6,6 +6,7 @@ import { WorkbookUtility } from "./workbook.util";
 import { FileAdapter } from "../../util/fileHandler";
 import { ContentTypes } from "../../entities/files/contentTypes";
 import { SheetBuilder } from "./sheet.builder";
+import { Constants } from "../../util/constants";
 
 /**
  * Builder class for Workbook Utility
@@ -22,14 +23,14 @@ export class WorkbookUtilityBuilder {
 
     workbook = new WorkbookFile(eventBus);
     eventBus.trigger(
-      "addContentType",
+      Constants.Events.AddContentType,
       "Override",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml",
+      Constants.ContentTypes.Workbook,
       "/workbook/workbook.xml"
     );
-    eventBus.trigger("addFile", workbook);
+    eventBus.trigger(Constants.Events.AddFile, workbook);
     relations = new Relationships("workbook.xml.rels", "workbook/_rels");
-    eventBus.trigger("addFile", relations);
+    eventBus.trigger(Constants.Events.AddFile, relations);
 
     const workbookUtility = new WorkbookUtility(
       eventBus,
@@ -52,10 +53,58 @@ export class WorkbookUtilityBuilder {
     files: FileAdapter[],
     contentTypes: ContentTypes
   ) {
+    const workbookFileAdapter = this.getWorkbookFileAdapter(
+      contentTypes,
+      files
+    );
+
+    let relationshipFile = await this.loadRelationshipsFile(
+      workbookFileAdapter,
+      files,
+      contentTypes,
+      eventBus
+    );
+
+    let saredStringsFile = await this.loadSharedStringsFile(
+      relationshipFile,
+      files,
+      workbookFileAdapter
+    );
+
+    let workbookFile = await WorkbookFile.load(
+      eventBus,
+      workbookFileAdapter.fileContent,
+      workbookFileAdapter.fileName,
+      workbookFileAdapter.filePath
+    );
+
+    eventBus.trigger(Constants.Events.AddFile, workbookFile);
+
+    await this.loadSheets(
+      workbookFile,
+      workbookFileAdapter,
+      relationshipFile,
+      files,
+      eventBus
+    );
+
+    const workbookUtility = new WorkbookUtility(
+      eventBus,
+      workbookFile,
+      relationshipFile,
+      saredStringsFile
+    );
+
+    return workbookUtility;
+  }
+
+  private static getWorkbookFileAdapter(
+    contentTypes: ContentTypes,
+    files: FileAdapter[]
+  ): FileAdapter {
     let workbookContentType: string =
-      contentTypes.overrides[
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"
-      ];
+      contentTypes.overrides[Constants.ContentTypes.Workbook];
+
     if (workbookContentType.startsWith("/")) {
       workbookContentType = workbookContentType.substring(1);
     }
@@ -64,30 +113,43 @@ export class WorkbookUtilityBuilder {
       fl => fl.completeName === workbookContentType
     );
 
+    return workbookFile;
+  }
+
+  private static async loadRelationshipsFile(
+    workbookFile: FileAdapter,
+    files: FileAdapter[],
+    contentTypes: ContentTypes,
+    eventBus: EventBus
+  ): Promise<Relationships> {
     let relationsFile = FileAdapter.getRelationshipFile(
       workbookFile.filePath,
       files,
-      contentTypes.defaults[
-        "application/vnd.openxmlformats-package.relationships+xml"
-      ]
+      contentTypes.defaults[Constants.ContentTypes.Relationship]
     );
 
     let relation: Relationships;
 
+    // TODO else
     if (!relationsFile.processed) {
       relation = await Relationships.load(
         relationsFile.fileContent,
         relationsFile.fileNameWithExtention,
         relationsFile.filePath
       );
-      eventBus.trigger("addFile", relation);
+      eventBus.trigger(Constants.Events.AddFile, relation);
       relationsFile.processed = true;
       relationsFile.xmlFile = relation;
     }
+    return relation;
+  }
 
-    let sharedStringRel = relation.getByRelationship(
-      "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings"
-    );
+  private static async loadSharedStringsFile(
+    relation: Relationships,
+    files: FileAdapter[],
+    workbookFile: FileAdapter
+  ): Promise<SharedStringsFile> {
+    let sharedStringRel = relation.getByRelationship(Constants.Relationships.SharedString);
 
     let saredStrings: SharedStringsFile;
 
@@ -116,37 +178,48 @@ export class WorkbookUtilityBuilder {
       }
     }
 
-    let workbookFileXml = await WorkbookFile.load(
-      eventBus,
-      workbookFile.fileContent,
-      workbookFile.fileName,
-      workbookFile.filePath
-    );
+    return saredStrings;
+  }
 
-    eventBus.trigger("addFile", workbookFileXml);
+  private static async loadSheets(
+    workbookFileXml: WorkbookFile,
+    workbookFile: FileAdapter,
+    relation: Relationships,
+    files: FileAdapter[],
+    eventBus: EventBus
+  ) {
+    const relationshipNamespace = workbookFileXml.sheets.getNamespacePrefix(
+      Constants.Namespace.Relationships
+    );
 
     workbookFileXml.sheets.children.forEach(sheetNode => {
-      const rId = sheetNode.getAttribute("r:Id").value;
+      const rId = sheetNode.attribute("Id", relationshipNamespace).value;
       const relationNode = relation.getById(rId);
-      const filePath = relationNode.attribute(
-        "Target",
-        relation.defaultNamespace
+      const sheetId = sheetNode.attribute(
+        "sheetId",
+        workbookFileXml.defaultNamespace
       ).value;
+      const sheetName = sheetNode.attribute(
+        "name",
+        workbookFileXml.defaultNamespace
+      ).value;
+      const filePath =
+        workbookFile.filePath +
+        "/" +
+        relationNode.attribute("Target", relation.defaultNamespace).value;
 
-      // const file = files.find(
-      //   f => f.filePath + "/" + f.fileNameWithExtention === filePath
-      // );
-      // if (!file.processed) {
-      // }
+      const file = files.find(
+        f => f.filePath + "/" + f.fileNameWithExtention === filePath
+      );
+      if (!file.processed) {
+        SheetBuilder.create(
+          file,
+          eventBus,
+          workbookFileXml,
+          parseInt(sheetId),
+          sheetName
+        );
+      }
     });
-
-    const workbookUtility = new WorkbookUtility(
-      eventBus,
-      workbookFileXml,
-      relation,
-      saredStrings
-    );
-
-    return workbookUtility;
   }
 }
