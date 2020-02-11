@@ -2346,6 +2346,9 @@ define("app/xlsx/xlsx.util", ["require", "exports", "util/fileHandler", "app/xls
         Xlsx.load = function (file, options, fileName, callback) {
             return xlsx_util_builder_1.XlsxBuilder.create(file, options, fileName, callback);
         };
+        Xlsx.prototype.toJSON = function () {
+            return { fileName: this.fileName };
+        };
         return Xlsx;
     }());
     exports.Xlsx = Xlsx;

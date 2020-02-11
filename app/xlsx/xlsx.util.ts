@@ -71,4 +71,8 @@ export class Xlsx {
   ): Promise<Xlsx> {
     return XlsxBuilder.create(file, options, fileName, callback);
   }
+
+  public toJSON(){
+    return {fileName: this.fileName};
+  }
 }
