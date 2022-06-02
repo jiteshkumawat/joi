@@ -1,2 +1,2 @@
-  return require('utility/joi.browser');
+  return require('app/joi.browser');
 }));
