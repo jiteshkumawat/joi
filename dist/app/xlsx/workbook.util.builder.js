@@ -70,6 +70,7 @@ var WorkbookUtilityBuilder = /** @class */ (function () {
      * @param eventBus - Event bus
      * @param files - File adapter collection
      * @param contentTypes - Content types file
+     * @async
      */
     WorkbookUtilityBuilder.create = function (eventBus, files, contentTypes) {
         return __awaiter(this, void 0, void 0, function () {
@@ -103,6 +104,7 @@ var WorkbookUtilityBuilder = /** @class */ (function () {
             workbookContentType = workbookContentType.substring(1);
         }
         var workbookFile = files.find(function (fl) { return fl.completeName === workbookContentType; });
+        workbookFile.processed = true;
         return workbookFile;
     };
     WorkbookUtilityBuilder.loadRelationshipsFile = function (workbookFile, files, contentTypes, eventBus) {
@@ -159,9 +161,7 @@ var WorkbookUtilityBuilder = /** @class */ (function () {
                     var relationNode = relation.getById(rId);
                     var sheetId = sheetNode.attribute("sheetId", workbookFileXml.defaultNamespace).value;
                     var sheetName = sheetNode.attribute("name", workbookFileXml.defaultNamespace).value;
-                    var filePath = workbookFile.filePath +
-                        "/" +
-                        relationNode.attribute("Target", relation.defaultNamespace).value;
+                    var filePath = (workbookFile.filePath ? workbookFile.filePath + "/" : "") + relationNode.attribute("Target", relation.defaultNamespace).value;
                     var file = files.find(function (f) { return f.filePath + "/" + f.fileNameWithExtention === filePath; });
                     if (!file.processed) {
                         sheet_builder_1.SheetBuilder.create(file, eventBus, workbookFileXml, parseInt(sheetId), sheetName);

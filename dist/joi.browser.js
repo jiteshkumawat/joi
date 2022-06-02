@@ -320,7 +320,10 @@ define("entities/base/node", ["require", "exports", "entities/base/attribute", "
             return namespaceAttr;
         };
         /**
-         * Get namespace prefix which can be used
+         * Get prefix using namespace, which can be used on node.
+         * Eg. For Relationship Prefix.
+         * Input: http://schemas.openxmlformats.org/officeDocument/2006/relationships.
+         * Possible Output: r
          * @param namespace - The namespace string
          */
         Node.prototype.getNamespacePrefix = function (namespace) {
@@ -1620,7 +1623,7 @@ define("entities/xlsx/files/workbookFile", ["require", "exports", "entities/base
                 _this.rootNode.addNamespace(constants_8.Constants.Namespace.Relationships, "r");
                 _this.workbookViews = [];
                 _this.sheets = _this.addRootChild("sheets", _this.defaultNamespace).node;
-                _this.initializeView();
+                _this.initializeBookViews();
                 _this.bindListeners(eventBus);
             }
             return _this;
@@ -1694,13 +1697,12 @@ define("entities/xlsx/files/workbookFile", ["require", "exports", "entities/base
          */
         WorkbookFile.prototype.loadInternal = function () {
             var _this = this;
-            var bookViews = this.rootNode.child("bookViews", this.defaultNamespace);
+            this.bookViews = this.rootNode.child("bookViews", this.defaultNamespace);
             this.workbookViews = [];
-            if (bookViews) {
+            if (this.bookViews) {
                 var index_1 = 0;
-                bookViews.children.forEach(function (workbookViewNode) {
-                    if (workbookViewNode.name === "workbookView" &&
-                        workbookViewNode.namespace === _this.defaultNamespace) {
+                this.bookViews.children.forEach(function (workbookViewNode) {
+                    if (workbookViewNode.name === "workbookView" && workbookViewNode.namespace === _this.defaultNamespace) {
                         _this.workbookViews.push({
                             sheets: [],
                             node: workbookViewNode,
@@ -1723,21 +1725,27 @@ define("entities/xlsx/files/workbookFile", ["require", "exports", "entities/base
             var _this = this;
             var self = this;
             eventBus.startListening(constants_8.Constants.Events.SetSheetRelationId, function (id, rId) {
-                var sheetNode = self.sheets.children.find(function (sheet) {
-                    return sheet.attribute("sheetId", self.defaultNamespace).value ===
-                        id.toString();
-                });
+                var sheetNode = self.sheets.children.find(function (sheet) { return sheet.attribute("sheetId", self.defaultNamespace).value === id.toString(); });
                 sheetNode.attribute(new attribute_7.Attribute("id", rId, true, _this.rootNode.namespaces[constants_8.Constants.Namespace.Relationships]));
             });
             eventBus.startListening(constants_8.Constants.Events.SetSheetWorkbookView, function (sheetId, index, callback) {
+                if (!_this.bookViews) {
+                    _this.initializeBookViews();
+                }
                 if (index === undefined || index === null) {
+                    _this.workbookViews[0].sheets.push(sheetId);
+                    callback(0);
+                }
+                else {
+                    _this.workbookViews[index].sheets.push(sheetId);
+                    callback(index);
                 }
             });
         };
         /**
          * Initilize workbook view
          */
-        WorkbookFile.prototype.initializeView = function () {
+        WorkbookFile.prototype.initializeBookViews = function () {
             this.bookViews = this.addRootChild("bookViews", this.defaultNamespace).node;
             var activeTab = new attribute_7.Attribute("activeTab", "0", true, this.defaultNamespace);
             var workbookView = new node_7.Node("workbookView", [activeTab], true, this.defaultNamespace);
@@ -1875,6 +1883,9 @@ define("app/xlsx/sheet", ["require", "exports", "util/constants"], function (req
                 return self;
             };
         }
+        Sheet.prototype.toJSON = function () {
+            return { name: this.name };
+        };
         Sheet.prototype.defineNameProperty = function (sheetFile, workbookFile) {
             Object.defineProperty(this, "name", {
                 get: function () {
@@ -2070,6 +2081,7 @@ define("app/xlsx/workbook.util.builder", ["require", "exports", "entities/xlsx/f
          * @param eventBus - Event bus
          * @param files - File adapter collection
          * @param contentTypes - Content types file
+         * @async
          */
         WorkbookUtilityBuilder.create = function (eventBus, files, contentTypes) {
             return __awaiter(this, void 0, void 0, function () {
@@ -2103,6 +2115,7 @@ define("app/xlsx/workbook.util.builder", ["require", "exports", "entities/xlsx/f
                 workbookContentType = workbookContentType.substring(1);
             }
             var workbookFile = files.find(function (fl) { return fl.completeName === workbookContentType; });
+            workbookFile.processed = true;
             return workbookFile;
         };
         WorkbookUtilityBuilder.loadRelationshipsFile = function (workbookFile, files, contentTypes, eventBus) {
@@ -2159,9 +2172,7 @@ define("app/xlsx/workbook.util.builder", ["require", "exports", "entities/xlsx/f
                         var relationNode = relation.getById(rId);
                         var sheetId = sheetNode.attribute("sheetId", workbookFileXml.defaultNamespace).value;
                         var sheetName = sheetNode.attribute("name", workbookFileXml.defaultNamespace).value;
-                        var filePath = workbookFile.filePath +
-                            "/" +
-                            relationNode.attribute("Target", relation.defaultNamespace).value;
+                        var filePath = (workbookFile.filePath ? workbookFile.filePath + "/" : "") + relationNode.attribute("Target", relation.defaultNamespace).value;
                         var file = files.find(function (f) { return f.filePath + "/" + f.fileNameWithExtention === filePath; });
                         if (!file.processed) {
                             sheet_builder_2.SheetBuilder.create(file, eventBus, workbookFileXml, parseInt(sheetId), sheetName);

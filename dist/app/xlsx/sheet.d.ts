@@ -24,6 +24,9 @@ export declare class Sheet {
      * @returns {string} - True if sheetFile is active
      */
     name: boolean;
+    toJSON(): {
+        name: boolean;
+    };
     private defineNameProperty;
     private configureInternal;
 }

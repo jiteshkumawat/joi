@@ -22,7 +22,7 @@ const load = (
   file: any,
   options?: any,
   fileName?: string,
-  callback?: Function
+  callback?: (xlsxFile: XlsxClass) => any
 ): Promise<XlsxClass> => {
   return XlsxClass.load(file, options, fileName, callback);
 };

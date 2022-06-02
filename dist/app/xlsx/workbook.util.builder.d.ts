@@ -16,6 +16,7 @@ export declare class WorkbookUtilityBuilder {
      * @param eventBus - Event bus
      * @param files - File adapter collection
      * @param contentTypes - Content types file
+     * @async
      */
     static create(eventBus: EventBus, files: FileAdapter[], contentTypes: ContentTypes): Promise<WorkbookUtility>;
     private static getWorkbookFileAdapter;

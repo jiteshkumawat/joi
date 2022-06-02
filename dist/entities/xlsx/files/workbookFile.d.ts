@@ -58,7 +58,7 @@ export declare class WorkbookFile extends FileBase {
     /**
      * Initilize workbook view
      */
-    private initializeView;
+    private initializeBookViews;
     /**
      * Add a new sheet
      * @param {SheetFile} sheet - The sheet to add

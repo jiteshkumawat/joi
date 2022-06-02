@@ -73,7 +73,7 @@ var WorkbookFile = /** @class */ (function (_super) {
             _this.rootNode.addNamespace(constants_1.Constants.Namespace.Relationships, "r");
             _this.workbookViews = [];
             _this.sheets = _this.addRootChild("sheets", _this.defaultNamespace).node;
-            _this.initializeView();
+            _this.initializeBookViews();
             _this.bindListeners(eventBus);
         }
         return _this;
@@ -147,13 +147,12 @@ var WorkbookFile = /** @class */ (function (_super) {
      */
     WorkbookFile.prototype.loadInternal = function () {
         var _this = this;
-        var bookViews = this.rootNode.child("bookViews", this.defaultNamespace);
+        this.bookViews = this.rootNode.child("bookViews", this.defaultNamespace);
         this.workbookViews = [];
-        if (bookViews) {
+        if (this.bookViews) {
             var index_1 = 0;
-            bookViews.children.forEach(function (workbookViewNode) {
-                if (workbookViewNode.name === "workbookView" &&
-                    workbookViewNode.namespace === _this.defaultNamespace) {
+            this.bookViews.children.forEach(function (workbookViewNode) {
+                if (workbookViewNode.name === "workbookView" && workbookViewNode.namespace === _this.defaultNamespace) {
                     _this.workbookViews.push({
                         sheets: [],
                         node: workbookViewNode,
@@ -176,21 +175,27 @@ var WorkbookFile = /** @class */ (function (_super) {
         var _this = this;
         var self = this;
         eventBus.startListening(constants_1.Constants.Events.SetSheetRelationId, function (id, rId) {
-            var sheetNode = self.sheets.children.find(function (sheet) {
-                return sheet.attribute("sheetId", self.defaultNamespace).value ===
-                    id.toString();
-            });
+            var sheetNode = self.sheets.children.find(function (sheet) { return sheet.attribute("sheetId", self.defaultNamespace).value === id.toString(); });
             sheetNode.attribute(new attribute_1.Attribute("id", rId, true, _this.rootNode.namespaces[constants_1.Constants.Namespace.Relationships]));
         });
         eventBus.startListening(constants_1.Constants.Events.SetSheetWorkbookView, function (sheetId, index, callback) {
+            if (!_this.bookViews) {
+                _this.initializeBookViews();
+            }
             if (index === undefined || index === null) {
+                _this.workbookViews[0].sheets.push(sheetId);
+                callback(0);
+            }
+            else {
+                _this.workbookViews[index].sheets.push(sheetId);
+                callback(index);
             }
         });
     };
     /**
      * Initilize workbook view
      */
-    WorkbookFile.prototype.initializeView = function () {
+    WorkbookFile.prototype.initializeBookViews = function () {
         this.bookViews = this.addRootChild("bookViews", this.defaultNamespace).node;
         var activeTab = new attribute_1.Attribute("activeTab", "0", true, this.defaultNamespace);
         var workbookView = new node_1.Node("workbookView", [activeTab], true, this.defaultNamespace);

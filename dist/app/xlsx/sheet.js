@@ -19,6 +19,9 @@ var Sheet = /** @class */ (function () {
             return self;
         };
     }
+    Sheet.prototype.toJSON = function () {
+        return { name: this.name };
+    };
     Sheet.prototype.defineNameProperty = function (sheetFile, workbookFile) {
         Object.defineProperty(this, "name", {
             get: function () {

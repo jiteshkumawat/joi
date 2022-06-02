@@ -144,24 +144,14 @@ export class SheetFile extends FileBase {
     name: string
   ): Promise<SheetFile> {
     let sheetFile = new SheetFile(undefined, undefined, true);
-    await XmlParser.parse(
-      content,
-      sheetFile,
-      Constants.Namespace.Workbook
-    );
+    await XmlParser.parse(content, sheetFile, Constants.Namespace.Workbook);
     sheetFile.fileName = fileName;
     sheetFile.filePath = filePath;
     sheetFile.id = id;
     sheetFile.name = name;
-    sheetFile.sheetViews = sheetFile.rootNode.child(
-      "sheetViews",
-      sheetFile.defaultNamespace
-    );
+    sheetFile.sheetViews = sheetFile.rootNode.child("sheetViews", sheetFile.defaultNamespace);
     if (sheetFile.sheetViews) {
-      sheetFile.sheetView = sheetFile.sheetViews.child(
-        "sheetView",
-        sheetFile.defaultNamespace
-      );
+      sheetFile.sheetView = sheetFile.sheetViews.child("sheetView", sheetFile.defaultNamespace);
     }
     sheetFile.sheetData = sheetFile.rootNode.child(
       "sheetData",

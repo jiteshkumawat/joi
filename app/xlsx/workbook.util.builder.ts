@@ -47,72 +47,32 @@ export class WorkbookUtilityBuilder {
    * @param eventBus - Event bus
    * @param files - File adapter collection
    * @param contentTypes - Content types file
+   * @async
    */
   public static async create(
     eventBus: EventBus,
     files: FileAdapter[],
     contentTypes: ContentTypes
   ) {
-    const workbookFileAdapter = this.getWorkbookFileAdapter(
-      contentTypes,
-      files
-    );
-
-    let relationshipFile = await this.loadRelationshipsFile(
-      workbookFileAdapter,
-      files,
-      contentTypes,
-      eventBus
-    );
-
-    let saredStringsFile = await this.loadSharedStringsFile(
-      relationshipFile,
-      files,
-      workbookFileAdapter
-    );
-
-    let workbookFile = await WorkbookFile.load(
-      eventBus,
-      workbookFileAdapter.fileContent,
-      workbookFileAdapter.fileName,
-      workbookFileAdapter.filePath
-    );
-
+    const workbookFileAdapter = this.getWorkbookFileAdapter(contentTypes, files);
+    const relationshipFile = await this.loadRelationshipsFile(workbookFileAdapter, files, contentTypes, eventBus);
+    const saredStringsFile = await this.loadSharedStringsFile(relationshipFile, files, workbookFileAdapter);
+    const workbookFile = await WorkbookFile.load(eventBus, workbookFileAdapter.fileContent, workbookFileAdapter.fileName, workbookFileAdapter.filePath);
     eventBus.trigger(Constants.Events.AddFile, workbookFile);
-
-    await this.loadSheets(
-      workbookFile,
-      workbookFileAdapter,
-      relationshipFile,
-      files,
-      eventBus
-    );
-
-    const workbookUtility = new WorkbookUtility(
-      eventBus,
-      workbookFile,
-      relationshipFile,
-      saredStringsFile
-    );
-
+    await this.loadSheets(workbookFile, workbookFileAdapter, relationshipFile, files, eventBus);
+    const workbookUtility = new WorkbookUtility(eventBus, workbookFile, relationshipFile, saredStringsFile);
     return workbookUtility;
   }
 
-  private static getWorkbookFileAdapter(
-    contentTypes: ContentTypes,
-    files: FileAdapter[]
-  ): FileAdapter {
-    let workbookContentType: string =
-      contentTypes.overrides[Constants.ContentTypes.Workbook];
+  private static getWorkbookFileAdapter(contentTypes: ContentTypes, files: FileAdapter[]): FileAdapter {
+    let workbookContentType: string = contentTypes.overrides[Constants.ContentTypes.Workbook];
 
     if (workbookContentType.startsWith("/")) {
       workbookContentType = workbookContentType.substring(1);
     }
 
-    const workbookFile = files.find(
-      fl => fl.completeName === workbookContentType
-    );
-
+    const workbookFile = files.find(fl => fl.completeName === workbookContentType);
+    workbookFile.processed = true;
     return workbookFile;
   }
 
@@ -163,10 +123,10 @@ export class WorkbookUtilityBuilder {
         fl =>
           fl.filePath ===
           workbookFile.filePath +
-            sharedStringRelValue.substring(
-              0,
-              sharedStringRelValue.lastIndexOf("/")
-            )
+          sharedStringRelValue.substring(
+            0,
+            sharedStringRelValue.lastIndexOf("/")
+          )
       );
 
       if (!sharedStringFile.processed) {
@@ -181,44 +141,19 @@ export class WorkbookUtilityBuilder {
     return saredStrings;
   }
 
-  private static async loadSheets(
-    workbookFileXml: WorkbookFile,
-    workbookFile: FileAdapter,
-    relation: Relationships,
-    files: FileAdapter[],
-    eventBus: EventBus
-  ) {
-    const relationshipNamespace = workbookFileXml.sheets.getNamespacePrefix(
-      Constants.Namespace.Relationships
-    );
+  private static async loadSheets(workbookFileXml: WorkbookFile, workbookFile: FileAdapter, relation: Relationships, files: FileAdapter[], eventBus: EventBus) {
+    const relationshipNamespace = workbookFileXml.sheets.getNamespacePrefix(Constants.Namespace.Relationships);
 
     workbookFileXml.sheets.children.forEach(sheetNode => {
       const rId = sheetNode.attribute("Id", relationshipNamespace).value;
       const relationNode = relation.getById(rId);
-      const sheetId = sheetNode.attribute(
-        "sheetId",
-        workbookFileXml.defaultNamespace
-      ).value;
-      const sheetName = sheetNode.attribute(
-        "name",
-        workbookFileXml.defaultNamespace
-      ).value;
-      const filePath =
-        workbookFile.filePath +
-        "/" +
-        relationNode.attribute("Target", relation.defaultNamespace).value;
+      const sheetId = sheetNode.attribute("sheetId", workbookFileXml.defaultNamespace).value;
+      const sheetName = sheetNode.attribute("name", workbookFileXml.defaultNamespace).value;
+      const filePath = (workbookFile.filePath ? workbookFile.filePath + "/" : "") + relationNode.attribute("Target", relation.defaultNamespace).value;
 
-      const file = files.find(
-        f => f.filePath + "/" + f.fileNameWithExtention === filePath
-      );
+      const file = files.find(f => f.filePath + "/" + f.fileNameWithExtention === filePath);
       if (!file.processed) {
-        SheetBuilder.create(
-          file,
-          eventBus,
-          workbookFileXml,
-          parseInt(sheetId),
-          sheetName
-        );
+        SheetBuilder.create(file, eventBus, workbookFileXml, parseInt(sheetId), sheetName);
       }
     });
   }

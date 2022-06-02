@@ -55,6 +55,10 @@ export class Sheet {
    */
   public name: boolean;
 
+  public toJSON(){
+    return {name: this.name};
+  }
+
   private defineNameProperty(sheetFile: SheetFile, workbookFile: WorkbookFile) {
     Object.defineProperty(this, "name", {
       get: function() {

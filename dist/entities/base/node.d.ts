@@ -35,7 +35,10 @@ export declare class Node {
      */
     addNamespace(namespace: string, prefix?: string): Attribute;
     /**
-     * Get namespace prefix which can be used
+     * Get prefix using namespace, which can be used on node.
+     * Eg. For Relationship Prefix.
+     * Input: http://schemas.openxmlformats.org/officeDocument/2006/relationships.
+     * Possible Output: r
      * @param namespace - The namespace string
      */
     getNamespacePrefix(namespace: string): string;

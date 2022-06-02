@@ -37,14 +37,11 @@ export class WorkbookFile extends FileBase {
     this.RootChildNodes = Constants.RootChildNodes.Workbook;
 
     if (!isLoad) {
-      this.rootNode.addNamespace(
-        Constants.Namespace.Relationships,
-        "r"
-      );
+      this.rootNode.addNamespace(Constants.Namespace.Relationships, "r");
 
       this.workbookViews = [];
       this.sheets = this.addRootChild("sheets", this.defaultNamespace).node;
-      this.initializeView();
+      this.initializeBookViews();
       this.bindListeners(eventBus);
     }
   }
@@ -148,16 +145,13 @@ export class WorkbookFile extends FileBase {
    * Load file internal
    */
   private loadInternal() {
-    let bookViews = this.rootNode.child("bookViews", this.defaultNamespace);
+    this.bookViews = this.rootNode.child("bookViews", this.defaultNamespace);
 
     this.workbookViews = [];
-    if (bookViews) {
+    if (this.bookViews) {
       let index = 0;
-      bookViews.children.forEach(workbookViewNode => {
-        if (
-          workbookViewNode.name === "workbookView" &&
-          workbookViewNode.namespace === this.defaultNamespace
-        ) {
+      this.bookViews.children.forEach(workbookViewNode => {
+        if (workbookViewNode.name === "workbookView" && workbookViewNode.namespace === this.defaultNamespace) {
           this.workbookViews.push({
             sheets: [],
             node: workbookViewNode,
@@ -182,53 +176,36 @@ export class WorkbookFile extends FileBase {
   private bindListeners(eventBus: EventBus) {
     var self = this;
     eventBus.startListening(Constants.Events.SetSheetRelationId, (id: number, rId: string) => {
-      var sheetNode = self.sheets.children.find(
-        sheet =>
-          sheet.attribute("sheetId", self.defaultNamespace).value ===
-          id.toString()
-      );
-      sheetNode.attribute(
-        new Attribute(
-          "id",
-          rId,
-          true,
-          this.rootNode.namespaces[Constants.Namespace.Relationships]
-        )
-      );
+      var sheetNode = self.sheets.children.find(sheet => sheet.attribute("sheetId", self.defaultNamespace).value === id.toString());
+      sheetNode.attribute(new Attribute("id", rId, true, this.rootNode.namespaces[Constants.Namespace.Relationships]));
     });
 
-    eventBus.startListening(
-      Constants.Events.SetSheetWorkbookView,
-      (sheetId: Number, index?: Number, callback?: Function) => {
-        if (index === undefined || index === null) {
-        }
+    eventBus.startListening(Constants.Events.SetSheetWorkbookView, (sheetId: number, index?: number, callback?: Function) => {
+      if (!this.bookViews) {
+        this.initializeBookViews();
       }
-    );
+
+      if (index === undefined || index === null) {
+        this.workbookViews[0].sheets.push(sheetId);
+        callback(0);
+      }
+      else {
+        this.workbookViews[index].sheets.push(sheetId);
+        callback(index);
+      }
+    });
   }
 
   /**
    * Initilize workbook view
    */
-  private initializeView() {
+  private initializeBookViews() {
     this.bookViews = this.addRootChild("bookViews", this.defaultNamespace).node;
+    let activeTab = new Attribute("activeTab", "0", true, this.defaultNamespace);
 
-    let activeTab = new Attribute(
-      "activeTab",
-      "0",
-      true,
-      this.defaultNamespace
-    );
-
-    let workbookView = new Node(
-      "workbookView",
-      [activeTab],
-      true,
-      this.defaultNamespace
-    );
+    let workbookView = new Node("workbookView", [activeTab], true, this.defaultNamespace);
     this.workbookViews.push({ sheets: [], node: workbookView, index: 0 });
-    this.bookViews.child(
-      new Node("workbookView", [activeTab], true, this.defaultNamespace)
-    );
+    this.bookViews.child(new Node("workbookView", [activeTab], true, this.defaultNamespace));
   }
 
   /**
